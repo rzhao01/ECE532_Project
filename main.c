@@ -58,7 +58,7 @@ int main()
                 waitEvent (screen);
                 break;
             }
-            else if (check_board_win(master_set[Curr_P.num])) {
+            else if (check_board_win(master_set, Curr_P)) {
                 msgWin(screen, Curr_P);
                 waitEvent (screen);
                 break;

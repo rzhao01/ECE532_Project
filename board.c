@@ -2,7 +2,8 @@
 #include "assert.h"
 
 // X in a row bit masks, X from 0 to 5
-ELEM BIT_MASK[6] = {0x0, 0x1, 0x3, 0x7, 0xF, 0x1F};
+ELEM FULL_MASK[6] = {0x0, 0x1, 0x3, 0x7, 0xF, 0x1F};
+ELEM BIT_MASK[6] = {0x0, 0x1, 0x2, 0x4, 0x8, 0x10};
 
 void assert_dims () {
 	assert (BOARD_ROWS == BOARD_COLS);
@@ -22,6 +23,10 @@ void copy_board (BOARD to, BOARD from) {
 	for (int i = 0; i < BOARD_ROWS; ++i)
 		to[i] = from[i];
 }
+void copy_board_set (BOARD_SET to, BOARD_SET from) {
+	copy_board (to[0], from[0]);
+	copy_board (to[1], from[1]);
+}
 
 int check_board_full (BOARD_SET S) {
 	for (int i = 0; i < BOARD_ROWS; ++i)
@@ -32,19 +37,19 @@ int check_board_full (BOARD_SET S) {
 
 // each count function counts the number of n in a rows
 // so count_horiz with n = 3 counts the number of occurances of 3 in a row
-int count_horiz (BOARD b, int n) {
+int count_horiz (BOARD_SET S, int p, int n) {
 	ELEM mask;
 	int result = 0;
 	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// in this loop calculate the row mask
-		mask = BIT_MASK[n] << col;
+		mask = FULL_MASK[n] << col;
 		for (int row = 0; row < BOARD_ROWS; ++row) {
-			if ((b[row] & mask) == mask)
+			if ((S[p][row] & mask) == mask)
 				result++;
 		}
 	}
 	return result;
 }
-int count_vert (BOARD b, int n) {
+int count_vert (BOARD_SET S, int p, int n) {
 	ELEM mask;
 	int result = 0;
 	for (int col = 0; col < BOARD_COLS; ++col) {			// row mask is always 1
@@ -52,28 +57,64 @@ int count_vert (BOARD b, int n) {
 		for (int row = 0; row < BOARD_ROWS-n+1; ++row) {	// each row
 			int count = 0;
 			for (int m = row; m < row+n; ++m)				// each sequence of n rows
-				if ((b[m] & mask) == mask)
+				if ((S[p][m] & mask) == mask)
 					count++;
 			result += (count == n);
 		}
 	}
 	return result;
 }
-int count_ne (BOARD b, int n) {
-	return 0;
+int count_ne (BOARD_SET S, int p, int n) {
+// similar to count_vert but each row uses a different mask offset by 1 bit
+	ELEM mask[n];
+	for (int i = 0; i < n; ++i)
+		mask[i] = BIT_MASK[n-i];
+
+	int result = 0;
+	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// row mask is always 1
+		for (int row = 0; row < BOARD_ROWS-n+1; ++row) {	// each row
+			int count = 0;
+			for (int m = 0; m < n; ++m)						// each sequence of n rows
+				if ((S[p][row+m] & mask[m]) == mask[m])
+					count++;
+			result += (count == n);
+		}
+
+		for (int i = 0; i < n; ++i)							// shift each mask by 1
+			mask[i] = mask[i] << 1;
+	}
+	return result;
 }
-int count_se (BOARD b, int n) {
-	return 0;
+int count_se (BOARD_SET S, int p, int n) {
+	// similar to count_vert but each row uses a different mask offset by 1 bit
+	ELEM mask[n];
+	for (int i = 0; i < n; ++i)
+		mask[i] = BIT_MASK[i+1];
+
+	int result = 0;
+	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// row mask is always 1
+		for (int row = 0; row < BOARD_ROWS-n+1; ++row) {	// each row
+			int count = 0;
+			for (int m = 0; m < n; ++m)						// each sequence of n rows
+				if ((S[p][row+m] & mask[m]) == mask[m])
+					count++;
+			result += (count == n);
+		}
+
+		for (int i = 0; i < n; ++i)							// shift each mask by 1
+			mask[i] = mask[i] << 1;
+	}
+	return result;
 }
 
-int check_board_win (BOARD b) {
-	if (count_horiz(b,5) > 0)
+int check_board_win (BOARD_SET S, PLAYER player) {
+	if (count_horiz(S, player.num, 5) > 0)
 		return 1;
-	if (count_vert(b,5) > 0)
+	if (count_vert(S, player.num, 5) > 0)
 		return 1;
-	if (count_ne(b,5) > 0)
+	if (count_ne(S, player.num, 5) > 0)
 		return 1;
-	if (count_se(b,5) > 0)
+	if (count_se(S, player.num, 5) > 0)
 		return 1;
 	return 0;
 }

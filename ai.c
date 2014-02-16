@@ -11,8 +11,8 @@ int board_position_weight (int row, int col) {
 	return BOARD_ROWS/2 + NABS(row - BOARD_ROWS/2) + BOARD_COLS/2 + NABS(col - BOARD_COLS/2);
 }
 
-int get_move_ai1 (BOARD_SET S, int player, char *row, char *col) {
-	BOARD b;
+int get_move_ai1 (BOARD_SET S, int p, char *row, char *col) {
+	BOARD_SET ss;
 
 	int best_row=0, best_col=0;
 	long best_score = -1;
@@ -23,16 +23,17 @@ int get_move_ai1 (BOARD_SET S, int player, char *row, char *col) {
 			if (get_square_set(S, r, c))				// occupied
 				continue;
 
-			copy_board (b, S[player]);
-			set_square (b, r, c);
+			copy_board_set (ss, S);
+			set_square (ss[p], r, c);
 
 			long score = board_position_weight(r, c);
-			score += count_horiz(b,4) + count_vert(b,4) + count_ne(b,4) + count_se(b,4);
-			score = score*256 + count_horiz(b,3) + count_vert(b,3) + count_ne(b,3) + count_se(b,3);
-			score = score*256 + count_horiz(b,2) + count_vert(b,2) + count_ne(b,2) + count_se(b,2);
-			printf ("%d %d -> %d\n", r, c, score);
+			score += count_horiz(ss,p,5) + count_vert(ss,p,5) + count_ne(ss,p,5) + count_se(ss,p,5);
+			score = score*1024 + count_horiz(ss,p,4) + count_vert(ss,p,4) + count_ne(ss,p,4) + count_se(ss,p,4);
+			score = score*1024 + count_horiz(ss,p,3) + count_vert(ss,p,3) + count_ne(ss,p,3) + count_se(ss,p,3);
+			score = score*1024 + count_horiz(ss,p,2) + count_vert(ss,p,2) + count_ne(ss,p,2) + count_se(ss,p,2);
+			//printf ("%d %d -> %ld\n", r, c, score);
 
-			if (score > best_score) {
+			if (score > best_score || ((score==best_score) && (rand()%2 == 1))) {
 				best_score = score;
 				best_row = r;
 				best_col = c;
