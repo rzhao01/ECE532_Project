@@ -15,9 +15,9 @@ int drawBoardSet(SDL_Surface* screen, BOARD_SET S);
 //int clearStatusbar(SDL_Surface*);
 int msgStatusbar(SDL_Surface* screen, char* message, int color);
 int msgFull(SDL_Surface* screen);
-int msgWin(SDL_Surface* screen, int player);
+int msgWin(SDL_Surface* screen, PLAYER player);
 
-int mainMenu (SDL_Surface* screen, int* Player1, int* Player2);
+int mainMenu (SDL_Surface* screen, PLAYER* Player1, PLAYER* Player2);
 
 int waitEvent (SDL_Surface* screen);
 

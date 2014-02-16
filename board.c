@@ -17,14 +17,12 @@ void init_board_set (BOARD_SET S) {
 	init_board(S[0]);
 	init_board(S[1]);
 }
-/*
-char get_square (BOARD b, char row, char col) {
-	return (b[row] >> col) & 1;
+
+void copy_board (BOARD to, BOARD from) {
+	for (int i = 0; i < BOARD_ROWS; ++i)
+		to[i] = from[i];
 }
 
-void set_square (BOARD b, char row, char col) {
-	b[row] |= (1 << col);
-}*/
 int check_board_full (BOARD_SET S) {
 	for (int i = 0; i < BOARD_ROWS; ++i)
 		if ((S[0][i] | S[1][i]) != 0xFFFF)
@@ -34,7 +32,7 @@ int check_board_full (BOARD_SET S) {
 
 // each count function counts the number of n in a rows
 // so count_horiz with n = 3 counts the number of occurances of 3 in a row
-inline int count_horiz (BOARD b, int n) {
+int count_horiz (BOARD b, int n) {
 	ELEM mask;
 	int result = 0;
 	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// in this loop calculate the row mask
@@ -46,7 +44,7 @@ inline int count_horiz (BOARD b, int n) {
 	}
 	return result;
 }
-inline int count_vert (BOARD b, int n) {
+int count_vert (BOARD b, int n) {
 	ELEM mask;
 	int result = 0;
 	for (int col = 0; col < BOARD_COLS; ++col) {			// row mask is always 1
@@ -61,10 +59,10 @@ inline int count_vert (BOARD b, int n) {
 	}
 	return result;
 }
-inline int count_ne (BOARD b, int n) {
+int count_ne (BOARD b, int n) {
 	return 0;
 }
-inline int count_se (BOARD b, int n) {
+int count_se (BOARD b, int n) {
 	return 0;
 }
 

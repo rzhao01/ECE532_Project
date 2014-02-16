@@ -11,6 +11,8 @@ void assert_dims ();
 void init_board (BOARD b);
 void init_board_set (BOARD_SET S);
 
+void copy_board (BOARD to, BOARD from);
+
 inline int get_square (BOARD b, int row, int col) {
 	return b[row] & (1 << col);
 }
@@ -27,6 +29,11 @@ inline void set_square (BOARD b, int row, int col) {
 inline void unset_square (BOARD b, int row, int col) {
 	b[row] &= ~(1 << col);
 }
+
+int count_horiz (BOARD b, int n);
+int count_vert (BOARD b, int n);
+int count_ne (BOARD b, int n);
+int count_se (BOARD b, int n);
 
 int check_board_full (BOARD_SET S);
 int check_board_win (BOARD b);

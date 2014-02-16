@@ -104,11 +104,12 @@ int msgFull(SDL_Surface *screen)
   return 0;
 }
 
-int msgWin(SDL_Surface *screen, int player)
+int msgWin(SDL_Surface *screen, PLAYER player)
 {
 #ifdef GRAPHICS
   char buffer[200];
-  sprintf (buffer, "Player %d Wins. Any Key to Return", player+1);
+  sprintf (buffer, "Player %d [%s] Wins. Any Key to Return", 
+                    player.num+1, player.life==HUMAN ? "HUMAN" : "AI");
   msgStatusbar(screen,buffer, RED);
   SDL_Delay(1000);
 #endif
@@ -116,7 +117,7 @@ int msgWin(SDL_Surface *screen, int player)
 }
 
 // displays the menu, waits for user to indicate what game type, assigns Player1 and Player2 accordingly
-int mainMenu(SDL_Surface *screen, int* Player1, int* Player2)
+int mainMenu(SDL_Surface *screen, PLAYER* Player1, PLAYER* Player2)
 {
   msgStatusbar(screen, "[F1] Human vs Human, [F2] Human vs AI, [F3] AI vs Human, [F4] AI vs AI", WHITE);
   SDL_Event event;
@@ -129,21 +130,21 @@ int mainMenu(SDL_Surface *screen, int* Player1, int* Player2)
       if(event.type == SDL_KEYDOWN) {
         switch(event.key.keysym.sym) {
           case SDLK_F1:
-            *Player1 = HUMAN;
-            *Player2 = HUMAN;
+            Player1->life = HUMAN;
+            Player2->life = HUMAN;
             return 1;
           case SDLK_F2:
-            *Player1 = HUMAN;
-            *Player2 = AI;
+            Player1->life = HUMAN;
+            Player2->life = AI;
             return 1;
           case SDLK_F3:
-            *Player1 = AI;
-            *Player2 = HUMAN;
+            Player1->life = AI;
+            Player2->life = HUMAN;
             
             return 1;
           case SDLK_F4:
-            *Player1 = AI;
-            *Player2 = AI;
+            Player1->life = AI;
+            Player2->life = AI;
             return 1;
           case SDLK_q:
           case SDLK_ESCAPE:

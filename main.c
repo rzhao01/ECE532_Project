@@ -29,7 +29,7 @@ int main()
         drawBoardSet(screen, master_set);
 
         // display main menu and let user choose game mode
-        int status = mainMenu(screen, &Player1.life, &Player2.life);
+        int status = mainMenu(screen, &Player1, &Player2);
         if (status == 0)
             break;
 
@@ -37,20 +37,20 @@ int main()
 
         // inner loop for game turns
         for (;;) {
-            PLAYER Curr_Player = (turn % 2 == 1) ? Player1 : Player2;
+            PLAYER Curr_P = (turn % 2 == 1) ? Player1 : Player2;
             char row, col;
             int status = 0;
 
             // depending on which turn it is let the appropriate player move
-            if (Curr_Player.life == HUMAN)
-                status = get_move_player (screen, master_set, Curr_Player.num, &row, &col);
+            if (Curr_P.life == HUMAN)
+                status = get_move_player (screen, master_set, Curr_P.num, &row, &col);
             else
-                status = get_move_ai1 (master_set, &row, &col);
+                status = get_move_ai1 (master_set, Curr_P.num, &row, &col);
    
             if (status == 0)
                 break;
 
-            set_square(master_set[Curr_Player.num], row, col);
+            set_square(master_set[Curr_P.num], row, col);
             drawBoardSet(screen, master_set);
 
             if (check_board_full(master_set)) {
@@ -58,8 +58,8 @@ int main()
                 waitEvent (screen);
                 break;
             }
-            else if (check_board_win(master_set[Curr_Player.num])) {
-                msgWin(screen, Curr_Player.num);
+            else if (check_board_win(master_set[Curr_P.num])) {
+                msgWin(screen, Curr_P);
                 waitEvent (screen);
                 break;
             }
