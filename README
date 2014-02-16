@@ -1,0 +1,3 @@
+Course Project for ECE532
+
+Connect 5 with an AI that runs in hardware on an Atlys board with a Xillinx FPGA. Vivado HLS will be used to help generated the hardware.
