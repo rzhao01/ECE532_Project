@@ -3,6 +3,6 @@
 
 #include "common.h"
 
-int get_move_ai1 (BOARD b, char *row, char *col);
+int get_move_ai1 (BOARD_SET S, char *row, char *col);
 
 #endif

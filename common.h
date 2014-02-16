@@ -5,16 +5,16 @@
 
 #define BOARD_ROWS 15
 #define BOARD_COLS 15
-#define BITS_PER_ELEM 8
-#define BOARD_MEM_SIZE 225 // number of elements needed to store the bitboard
 
-#define EMPTY 0
-#define P1 1
-#define P2 2
+typedef int ELEM;
+typedef ELEM BOARD[BOARD_ROWS];
+typedef BOARD BOARD_SET[2];
+
+#define P1 0
+#define P2 1
 #define HUMAN 1
 #define AI 2
 
-typedef char BOARD[BOARD_MEM_SIZE];
 typedef struct {
 	int num, life;
 } PLAYER;

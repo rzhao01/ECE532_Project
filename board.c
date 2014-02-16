@@ -1,76 +1,81 @@
 #include "board.h"
+#include "assert.h"
+
+// X in a row bit masks, X from 0 to 5
+ELEM BIT_MASK[6] = {0x0, 0x1, 0x3, 0x7, 0xF, 0x1F};
+
+void assert_dims () {
+	assert (BOARD_ROWS == BOARD_COLS);
+	assert (sizeof(ELEM)*8 >= BOARD_COLS);
+}
 
 void init_board (BOARD b) {
-	for (int i = 0; i < BOARD_MEM_SIZE; ++i)
+	for (int i = 0; i < BOARD_ROWS; ++i)
 		b[i] = 0;
 }
-
+void init_board_set (BOARD_SET S) {
+	init_board(S[0]);
+	init_board(S[1]);
+}
+/*
 char get_square (BOARD b, char row, char col) {
-	return b[row*BOARD_COLS + col];
+	return (b[row] >> col) & 1;
 }
 
-void set_square (BOARD b, char row, char col, char value) {
-	b[row*BOARD_COLS + col] = value;
-}
-
-int check_board_full (BOARD b) {
-	char * ptr = b;
-	for (int n = 0; n < BOARD_ROWS*BOARD_COLS; ++n) {
-		if (*ptr != EMPTY)
+void set_square (BOARD b, char row, char col) {
+	b[row] |= (1 << col);
+}*/
+int check_board_full (BOARD_SET S) {
+	for (int i = 0; i < BOARD_ROWS; ++i)
+		if ((S[0][i] | S[1][i]) != 0xFFFF)
 			return 0;
-		ptr++;
-	}
 	return 1;
 }
 
-inline int count_horiz (char* ptr, char value) {
-	return ((ptr[0]==value) + (ptr[1]==value) + (ptr[2]==value) + (ptr[3]==value) + (ptr[4]==value));
+// each count function counts the number of n in a rows
+// so count_horiz with n = 3 counts the number of occurances of 3 in a row
+inline int count_horiz (BOARD b, int n) {
+	ELEM mask;
+	int result = 0;
+	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// in this loop calculate the row mask
+		mask = BIT_MASK[n] << col;
+		for (int row = 0; row < BOARD_ROWS; ++row) {
+			if ((b[row] & mask) == mask)
+				result++;
+		}
+	}
+	return result;
 }
-inline int count_vert (char* ptr, char value) {
-	return ((ptr[0]==value) + (ptr[1*BOARD_COLS]==value) + (ptr[2*BOARD_COLS]==value) + (ptr[3*BOARD_COLS]==value) + (ptr[4*BOARD_COLS]==value));
+inline int count_vert (BOARD b, int n) {
+	ELEM mask;
+	int result = 0;
+	for (int col = 0; col < BOARD_COLS; ++col) {			// row mask is always 1
+		mask = 1 << col;
+		for (int row = 0; row < BOARD_ROWS-n+1; ++row) {	// each row
+			int count = 0;
+			for (int m = row; m < row+n; ++m)				// each sequence of n rows
+				if ((b[m] & mask) == mask)
+					count++;
+			result += (count == n);
+		}
+	}
+	return result;
 }
-inline int count_ne (char* ptr, char value) {
-	return ((ptr[0]==value) + (ptr[1-1*BOARD_COLS]==value) + (ptr[2-2*BOARD_COLS]==value) + (ptr[3-3*BOARD_COLS]==value) + (ptr[4-4*BOARD_COLS]==value));
+inline int count_ne (BOARD b, int n) {
+	return 0;
 }
-inline int count_se (char* ptr, char value) {
-	return ((ptr[0]==value) + (ptr[1+1*BOARD_COLS]==value) + (ptr[2+2*BOARD_COLS]==value) + (ptr[3+3*BOARD_COLS]==value) + (ptr[4+4*BOARD_COLS]==value));
+inline int count_se (BOARD b, int n) {
+	return 0;
 }
 
-int check_board_win (BOARD b, char value) {
-	char* ptr;
-	for (int row = 0; row < BOARD_ROWS; ++row) {
-		ptr = b + row*BOARD_COLS;
-		for (int col = 0; col < BOARD_COLS-4; ++col) {
-			if (count_horiz(ptr, value) == 5)
-				return 1;
-			ptr++;
-		}
-	}
-	for (int row = 0; row < BOARD_ROWS-4; ++row) {
-		ptr = b + row*BOARD_COLS;
-		for (int col = 0; col < BOARD_COLS; ++col) {
-			if (count_vert(ptr, value) == 5)
-				return 1;
-			ptr++;
-		}
-	}
-	for (int row = 4; row < BOARD_ROWS; ++row) {
-		ptr = b + row*BOARD_COLS;
-		for (int col = 0; col < BOARD_COLS-4; ++col) {
-			if (count_ne(ptr, value) == 5)
-				return 1;
-			ptr++;
-		}
-	}
-	for (int row = 0; row < BOARD_ROWS-4; ++row) {
-		ptr = b + row*BOARD_COLS;
-		for (int col = 0; col < BOARD_COLS-4; ++col) {
-			if (count_se(ptr, value) == 5)
-				return 1;
-			ptr++;
-		}
-	}
-
-
+int check_board_win (BOARD b) {
+	if (count_horiz(b,5) > 0)
+		return 1;
+	if (count_vert(b,5) > 0)
+		return 1;
+	if (count_ne(b,5) > 0)
+		return 1;
+	if (count_se(b,5) > 0)
+		return 1;
 	return 0;
 }

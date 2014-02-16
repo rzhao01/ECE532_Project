@@ -10,6 +10,8 @@
 
 int main()
 {
+    assert_dims();
+
     SDL_Surface* screen;
     initDisplay (&screen, "connect5");
 
@@ -17,14 +19,14 @@ int main()
 
     // outer loop for menu options
     for (;;) {
-        BOARD master_board;
+        BOARD_SET master_set;
         PLAYER Player1, Player2;
-        Player1.num = 1;
-        Player2.num = 2;
+        Player1.num = 0;
+        Player2.num = 1;
 
         // set board to empty and draw grid
-        init_board(master_board);
-        drawBoard(screen, master_board);
+        init_board_set(master_set);
+        drawBoardSet(screen, master_set);
 
         // display main menu and let user choose game mode
         int status = mainMenu(screen, &Player1.life, &Player2.life);
@@ -41,22 +43,22 @@ int main()
 
             // depending on which turn it is let the appropriate player move
             if (Curr_Player.life == HUMAN)
-                status = get_move_player (screen, master_board, Curr_Player.num, &row, &col);
+                status = get_move_player (screen, master_set, Curr_Player.num, &row, &col);
             else
-                status = get_move_ai1 (master_board, &row, &col);
+                status = get_move_ai1 (master_set, &row, &col);
    
             if (status == 0)
                 break;
 
-            set_square(master_board, row, col, Curr_Player.num);
-            drawBoard(screen, master_board);
+            set_square(master_set[Curr_Player.num], row, col);
+            drawBoardSet(screen, master_set);
 
-            if (check_board_full(master_board)) {
+            if (check_board_full(master_set)) {
                 msgFull(screen);
                 waitEvent (screen);
                 break;
             }
-            else if (check_board_win(master_board, Curr_Player.num)) {
+            else if (check_board_win(master_set[Curr_Player.num])) {
                 msgWin(screen, Curr_Player.num);
                 waitEvent (screen);
                 break;

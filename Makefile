@@ -1,7 +1,7 @@
 CC=gcc
 LIBS=-lSDL -lSDL_gfx
 
-CFLAGS=-Wall -O2 -std=c99
+CFLAGS=-Wall -g -O2 -std=c99 -funroll-loops
 LDFLAGS=
 
 SRC=main.c graphics.c board.c ai.c

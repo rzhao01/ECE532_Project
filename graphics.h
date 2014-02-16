@@ -10,7 +10,7 @@
 #include "common.h"
 
 void initDisplay (SDL_Surface** screen, char title[]);
-int drawBoard(SDL_Surface* screen, BOARD b);
+int drawBoardSet(SDL_Surface* screen, BOARD_SET S);
 
 //int clearStatusbar(SDL_Surface*);
 int msgStatusbar(SDL_Surface* screen, char* message, int color);
@@ -21,6 +21,6 @@ int mainMenu (SDL_Surface* screen, int* Player1, int* Player2);
 
 int waitEvent (SDL_Surface* screen);
 
-int get_move_player (SDL_Surface* screen, BOARD b, int Player, char* row, char* col);
+int get_move_player (SDL_Surface* screen, BOARD_SET S, int Player, char* row, char* col);
 
 #endif

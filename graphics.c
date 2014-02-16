@@ -57,15 +57,17 @@ int drawSquare(SDL_Surface* screen, char row, char col, char square) {
 }
 
 // draw the board
-int drawBoard(SDL_Surface* screen, BOARD b)
+int drawBoardSet(SDL_Surface* screen, BOARD_SET S)
 {
 #ifdef GRAPHICS
   drawGrid (screen);
 
   for (int row = 0; row < BOARD_ROWS; ++row) {
     for (int col = 0; col < BOARD_COLS; ++col) {
-      char square = get_square (b, row, col);
-      drawSquare (screen, row, col, square);
+      if(get_square (S[P1], row, col))
+        drawSquare (screen, row, col, P1);
+      else if(get_square (S[P2], row, col))
+        drawSquare (screen, row, col, P2);
     }
   }
   SDL_UpdateRect(screen, 0,0,0,0);
@@ -106,7 +108,7 @@ int msgWin(SDL_Surface *screen, int player)
 {
 #ifdef GRAPHICS
   char buffer[200];
-  sprintf (buffer, "Player %d Wins. Any Key to Return", player);
+  sprintf (buffer, "Player %d Wins. Any Key to Return", player+1);
   msgStatusbar(screen,buffer, RED);
   SDL_Delay(1000);
 #endif
@@ -167,7 +169,7 @@ int waitEvent (SDL_Surface* screen) {
   return 0;
 }
 
-int get_move_player (SDL_Surface* screen, BOARD b, int Player, char* row, char* col) {
+int get_move_player (SDL_Surface* screen, BOARD_SET S, int Player, char* row, char* col) {
   char buffer[200];
   sprintf (buffer, "Waiting for Player %d (Human) to move", Player);
   msgStatusbar(screen, buffer, WHITE);
@@ -181,7 +183,7 @@ int get_move_player (SDL_Surface* screen, BOARD b, int Player, char* row, char* 
       if(event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT) {
         *col = (event.button.x - EXTRA_WIDTH/2) / SQUARE_SIZE;
         *row = (event.button.y) / SQUARE_SIZE;
-        if(get_square(b, *row, *col) == EMPTY) {
+        if(get_square_set(S, *row, *col) == 0) {
           return 1;
         }
       }
