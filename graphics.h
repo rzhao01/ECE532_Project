@@ -4,6 +4,7 @@
 #ifndef __GRAPHICS_H__
 #define __GRAPHICS_H__
 
+#include <stdlib.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
 

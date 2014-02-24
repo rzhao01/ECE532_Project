@@ -5,6 +5,13 @@
 #include <assert.h>
 
 #define NABS(x) ((x) > 0 ? (-(x)) : (x))
+#define CP5 1024*1024*1024
+#define CO4 1024*1024*8
+#define CP4 1024*1024
+#define CO3 1024*8
+#define CP3 1024
+#define CO2 8
+#define CP2 8
 
 // more weight to center squares
 inline
@@ -32,10 +39,7 @@ long board_count_score (BOARD_SET S, int p, int o) {
 	printf ("\tp5=%3d, o5=%3d\n\tp4=%3d, o4=%3d\n\tp3=%3d, o3=%3d\n\tp2=%3d, o2=%3d\n", 
 			p5,0, p4,o4, p3,o3, p2,o2);
 
-	score = p5 - o4;
-	score = (score<<10) + p4 - o3;
-	score = (score<<10) + p3 - o2;
-	score = (score<<10) + p2;
+	score = CP5*p5 - CO4*o4 + CP4*p4 - CO3*o3 + CP3*p3 - CO2*o2 + CP2*p2;
 	return score;
 }
 

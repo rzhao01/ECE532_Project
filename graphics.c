@@ -13,7 +13,7 @@ void initDisplay (SDL_Surface** screen, char title[]) {
     exit(1);
   }
 
-  //SDL_putenv("SDL_VIDEO_CENTERED=1"); //FIXME: okno doprostred, ale vyvola warning pri kompilaci
+  SDL_putenv("SDL_VIDEO_CENTERED=1");
   *screen = SDL_SetVideoMode(BOARD_COLS*SQUARE_SIZE + EXTRA_WIDTH, BOARD_ROWS*SQUARE_SIZE + STATUSBAR_SIZE, 32, SDL_HWSURFACE);
   if(*screen == NULL)
   {
