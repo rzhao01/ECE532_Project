@@ -25,6 +25,6 @@ $(EXE2): $(OBJ) $(EXE2_SRC)
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f $(EXE) $(OBJ)
+	rm -f $(EXE) *.o
 
 .PHONY: all clean
