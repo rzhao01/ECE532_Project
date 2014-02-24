@@ -4,14 +4,22 @@ LIBS=-lSDL -lSDL_gfx
 CFLAGS=-Wall -g -O2 -std=c99 -funroll-loops -D_XOPEN_SOURCE
 LDFLAGS=
 
-SRC=main.c graphics.c board.c ai.c
+EXE1=connect5
+EXE1_SRC=main.c
+EXE2=experiment
+EXE2_SRC=experiment.c
+
+SRC=graphics.c board.c ai.c
 OBJ=$(SRC:.c=.o)
-EXE=connect5
+EXE=$(EXE1) $(EXE2)
 
 all:$(SRC) $(EXE)
 
-$(EXE): $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(LIBS) -o $@
+$(EXE1): $(OBJ) $(EXE1_SRC)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(EXE1_SRC) $(LIBS) -o $@
+
+$(EXE2): $(OBJ) $(EXE2_SRC)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(EXE2_SRC) $(LIBS) -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
