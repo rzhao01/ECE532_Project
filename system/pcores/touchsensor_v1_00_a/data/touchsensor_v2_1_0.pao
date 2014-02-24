@@ -1,0 +1,16 @@
+##############################################################################
+## Filename:          C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/touchsensor_v1_00_a/data/touchsensor_v2_1_0.pao
+## Description:       Peripheral Analysis Order
+## Date:              Wed Feb 06 14:29:29 2013 (by Create and Import Peripheral Wizard)
+##############################################################################
+
+lib proc_common_v3_00_a  all 
+lib axi_lite_ipif_v1_01_a  all 
+
+lib touchsensor_v1_00_a digilent/Video.vhd vhdl
+lib touchsensor_v1_00_a digilent/InputSync.vhd vhdl
+lib touchsensor_v1_00_a digilent/Touch.vhd vhdl
+lib touchsensor_v1_00_a TouchCtrl vhdl
+
+lib touchsensor_v1_00_a user_logic vhdl
+lib touchsensor_v1_00_a touchsensor vhdl

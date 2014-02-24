@@ -1,0 +1,12 @@
+
+This core was made local using the MakeIPLocal tool. 
+
+Env variables when core was made local are as follows: 
+
+XILINX = G:\Programs\Xilinx\14.2\ISE_DS\ISE\;G:\Programs\Xilinx\14.2\ISE_DS\EDK 
+XILINX_EDK = G:\Programs\Xilinx\14.2\ISE_DS\EDK 
+
+Repository from which the core was copied = G:\Programs\Xilinx\14.2\ISE_DS\edk_user_repository\MyProcessorIPLib\ 
+
+The following helper cores were copied as a part of making this core local: 
+

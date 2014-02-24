@@ -1,0 +1,3 @@
+PROCESSOR=microblaze_0
+REPOSITORIES=-lp G:/Course_Work/ECE532/ECE532_Project/system/SDK_workspace/connectAI_bsp_0/drivers
+HWSPEC=../revA_hw_platform/system.xml
