@@ -32,12 +32,12 @@ inline void unset_square (BOARD b, int row, int col) {
 	b[row] &= ~(1 << col);
 }
 
-int count_horiz (BOARD_SET S, int p, int n);
-int count_vert (BOARD_SET S, int p, int n);
-int count_ne (BOARD_SET S, int p, int n);
-int count_se (BOARD_SET S, int p, int n);
+COUNTS count_horiz (BOARD_SET S, int p, int o);
+COUNTS count_vert (BOARD_SET S, int p, int o);
+COUNTS count_ne (BOARD_SET S, int p, int o);
+COUNTS count_se (BOARD_SET S, int p, int o);
 
 int check_board_full (BOARD_SET S);
-int check_board_win (BOARD_SET S, PLAYER player);
+int check_board_win (BOARD_SET S, PLAYER player, PLAYER opp);
 
 #endif

@@ -37,7 +37,16 @@ int main()
 
         // inner loop for game turns
         for (;;) {
-            PLAYER Curr_P = (turn % 2 == 1) ? Player1 : Player2;
+            PLAYER Curr_P, Opp_P;
+            if (turn % 2 == 1) {
+                Curr_P = Player1;
+                Opp_P = Player2;
+            }
+            else {
+                Curr_P = Player2;
+                Opp_P = Player1;   
+            }
+
             char row, col;
             int status = 0;
 
@@ -45,7 +54,7 @@ int main()
             if (Curr_P.life == HUMAN)
                 status = get_move_player (screen, master_set, Curr_P.num, &row, &col);
             else
-                status = get_move_ai1 (master_set, Curr_P.num, &row, &col);
+                status = get_move_ai1 (master_set, Curr_P.num, Opp_P.num, &row, &col);
    
             if (status == 0)
                 break;
@@ -58,7 +67,7 @@ int main()
                 waitEvent (screen);
                 break;
             }
-            else if (check_board_win(master_set, Curr_P)) {
+            else if (check_board_win(master_set, Curr_P, Opp_P)) {
                 msgWin(screen, Curr_P);
                 waitEvent (screen);
                 break;

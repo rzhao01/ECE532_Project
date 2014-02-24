@@ -30,91 +30,157 @@ void copy_board_set (BOARD_SET to, BOARD_SET from) {
 
 int check_board_full (BOARD_SET S) {
 	for (int i = 0; i < BOARD_ROWS; ++i)
-		if ((S[0][i] | S[1][i]) != 0xFFFF)
+		if ((S[0][i] | S[1][i]) != 0x7FFF)
 			return 0;
 	return 1;
 }
 
-// each count function counts the number of n in a rows
-// so count_horiz with n = 3 counts the number of occurances of 3 in a row
-int count_horiz (BOARD_SET S, int p, int n) {
-	ELEM mask;
-	int result = 0;
-	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// in this loop calculate the row mask
-		mask = FULL_MASK[n] << col;
-		for (int row = 0; row < BOARD_ROWS; ++row) {
-			if ((S[p][row] & mask) == mask)
-				result++;
+void zero_counts (COUNTS* C) {
+	C->p2 = C->p3 = C->p4 = C->p5 = 0;
+	C->o2 = C->o3 = C->o4 = C->o5 = 0;
+}
+
+// traverse the board using a horizontal window of 5 squares.
+// count the number of occurances of exactly n stones in the window,
+// with no opposing stones in the same window
+COUNTS count_horiz (BOARD_SET S, int p, int o) {
+	COUNTS result;
+	zero_counts (&result);
+	for (int row = 0; row < BOARD_ROWS; ++row) {
+		for (int col = 0; col < BOARD_COLS-4; ++col) {
+			unsigned p_count = 0;
+			unsigned o_count = 0;
+
+			for (int m = 0; m < 5; ++m) {
+				if (get_square(S[o], row, col+m))
+					o_count++;
+				if (get_square(S[p], row, col+m))
+					p_count++;
+			}
+
+			if (o_count == 0) {
+				result.p5 += (p_count == 5);
+				result.p4 += (p_count == 4);
+				result.p3 += (p_count == 3);
+				result.p2 += (p_count == 2);
+			}
+			if (p_count == 0) {
+				result.o5 += (o_count == 5);
+				result.o4 += (o_count == 4);
+				result.o3 += (o_count == 3);
+				result.o2 += (o_count == 2);
+			}
 		}
 	}
 	return result;
 }
-int count_vert (BOARD_SET S, int p, int n) {
-	ELEM mask;
-	int result = 0;
-	for (int col = 0; col < BOARD_COLS; ++col) {			// row mask is always 1
-		mask = 1 << col;
-		for (int row = 0; row < BOARD_ROWS-n+1; ++row) {	// each row
-			int count = 0;
-			for (int m = row; m < row+n; ++m)				// each sequence of n rows
-				if ((S[p][m] & mask) == mask)
-					count++;
-			result += (count == n);
+COUNTS count_vert (BOARD_SET S, int p, int o) {
+	COUNTS result;
+	zero_counts (&result);
+	for (int col = 0; col < BOARD_COLS; ++col) {
+		for (int row = 0; row < BOARD_ROWS-4; ++row) {
+			unsigned p_count = 0;
+			unsigned o_count = 0;
+
+			for (int m = 0; m < 5; ++m) {
+				if (get_square(S[o], row+m, col))
+					o_count++;
+				if (get_square(S[p], row+m, col))
+					p_count++;
+			}
+
+			if (o_count == 0) {
+				result.p5 += (p_count == 5);
+				result.p4 += (p_count == 4);
+				result.p3 += (p_count == 3);
+				result.p2 += (p_count == 2);
+			}
+			if (p_count == 0) {
+				result.o5 += (o_count == 5);
+				result.o4 += (o_count == 4);
+				result.o3 += (o_count == 3);
+				result.o2 += (o_count == 2);
+			}
 		}
 	}
 	return result;
 }
-int count_ne (BOARD_SET S, int p, int n) {
-// similar to count_vert but each row uses a different mask offset by 1 bit
-	ELEM mask[n];
-	for (int i = 0; i < n; ++i)
-		mask[i] = BIT_MASK[n-i];
+COUNTS count_ne (BOARD_SET S, int p, int o) {
+	COUNTS result;
+	zero_counts (&result);
+	for (int row = 4; row < BOARD_ROWS; ++row) {
+		for (int col = 0; col < BOARD_COLS-4; ++col) {	
+			unsigned p_count = 0;
+			unsigned o_count = 0;
 
-	int result = 0;
-	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// row mask is always 1
-		for (int row = 0; row < BOARD_ROWS-n+1; ++row) {	// each row
-			int count = 0;
-			for (int m = 0; m < n; ++m)						// each sequence of n rows
-				if ((S[p][row+m] & mask[m]) == mask[m])
-					count++;
-			result += (count == n);
+			for (int m = 0; m < 5; ++m) {
+				if (get_square(S[o], row-m, col+m))
+					o_count++;
+				if (get_square(S[p], row-m, col+m))
+					p_count++;
+			}
+
+			if (o_count == 0) {
+				result.p5 += (p_count == 5);
+				result.p4 += (p_count == 4);
+				result.p3 += (p_count == 3);
+				result.p2 += (p_count == 2);
+			}
+			if (p_count == 0) {
+				result.o5 += (o_count == 5);
+				result.o4 += (o_count == 4);
+				result.o3 += (o_count == 3);
+				result.o2 += (o_count == 2);
+			}
 		}
-
-		for (int i = 0; i < n; ++i)							// shift each mask by 1
-			mask[i] = mask[i] << 1;
 	}
 	return result;
 }
-int count_se (BOARD_SET S, int p, int n) {
-	// similar to count_vert but each row uses a different mask offset by 1 bit
-	ELEM mask[n];
-	for (int i = 0; i < n; ++i)
-		mask[i] = BIT_MASK[i+1];
+COUNTS count_se (BOARD_SET S, int p, int o) {
+	COUNTS result;
+	zero_counts (&result);
+	for (int row = 0; row < BOARD_ROWS-4; ++row) {
+		for (int col = 0; col < BOARD_COLS-4; ++col) {	
+			unsigned p_count = 0;
+			unsigned o_count = 0;
 
-	int result = 0;
-	for (int col = 0; col < BOARD_COLS-n+1; ++col) {		// row mask is always 1
-		for (int row = 0; row < BOARD_ROWS-n+1; ++row) {	// each row
-			int count = 0;
-			for (int m = 0; m < n; ++m)						// each sequence of n rows
-				if ((S[p][row+m] & mask[m]) == mask[m])
-					count++;
-			result += (count == n);
+			for (int m = 0; m < 5; ++m) {
+				if (get_square(S[o], row+m, col+m))
+					o_count++;
+				if (get_square(S[p], row+m, col+m))
+					p_count++;
+			}
+
+			if (o_count == 0) {
+				result.p5 += (p_count == 5);
+				result.p4 += (p_count == 4);
+				result.p3 += (p_count == 3);
+				result.p2 += (p_count == 2);
+			}
+			if (p_count == 0) {
+				result.o5 += (o_count == 5);
+				result.o4 += (o_count == 4);
+				result.o3 += (o_count == 3);
+				result.o2 += (o_count == 2);
+			}
 		}
-
-		for (int i = 0; i < n; ++i)							// shift each mask by 1
-			mask[i] = mask[i] << 1;
 	}
 	return result;
 }
 
-int check_board_win (BOARD_SET S, PLAYER player) {
-	if (count_horiz(S, player.num, 5) > 0)
+int check_board_win (BOARD_SET S, PLAYER player, PLAYER opp) {
+	COUNTS result;
+	result = count_horiz(S, player.num, opp.num);
+	if (result.p5 > 0)
 		return 1;
-	if (count_vert(S, player.num, 5) > 0)
+	result = count_vert(S, player.num, opp.num);
+	if (result.p5 > 0)
 		return 1;
-	if (count_ne(S, player.num, 5) > 0)
+	result = count_ne(S, player.num, opp.num);
+	if (result.p5 > 0)
 		return 1;
-	if (count_se(S, player.num, 5) > 0)
+	result = count_se(S, player.num, opp.num);
+	if (result.p5 > 0)
 		return 1;
 	return 0;
 }

@@ -16,6 +16,11 @@ typedef BOARD BOARD_SET[2];
 #define AI 2
 
 typedef struct {
+	int p2, p3, p4, p5;
+	int o2, o3, o4, o5;
+} COUNTS;
+
+typedef struct {
 	int num, life;
 } PLAYER;
 
