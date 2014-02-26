@@ -5,9 +5,11 @@
 
 #define BOARD_ROWS 15
 #define BOARD_COLS 15
+#define BOARD_ELEMS 8 
+#define BITS_PER_ELEM 32
 
 typedef int ELEM;
-typedef ELEM BOARD[BOARD_ROWS];
+typedef ELEM BOARD[BOARD_ELEMS];
 typedef BOARD BOARD_SET[2];
 
 #define P1 0

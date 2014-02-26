@@ -15,21 +15,17 @@ void init_board_set (BOARD_SET S);
 void copy_board (BOARD to, BOARD from);
 void copy_board_set (BOARD_SET to, BOARD_SET from);
 
-inline int get_square (BOARD b, int row, int col) {
-	return b[row] & (1 << col);
-}
-inline int get_square_set (BOARD_SET S, int row, int col) {
+int get_square (BOARD b, int row, int col);
+void set_square (BOARD b, int row, int col);
+void unset_square (BOARD b, int row, int col);
+
+inline
+int get_square_set (BOARD_SET S, int row, int col) {
 	if (get_square (S[0],row,col))
 		return 1;
 	if (get_square (S[1],row,col))
 		return 1;
 	return 0;
-}
-inline void set_square (BOARD b, int row, int col) {
-	b[row] |= (1 << col);
-}
-inline void unset_square (BOARD b, int row, int col) {
-	b[row] &= ~(1 << col);
 }
 
 COUNTS count_horiz (BOARD_SET S, int p, int o);

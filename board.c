@@ -1,17 +1,15 @@
 #include "board.h"
 #include "assert.h"
 
-// X in a row bit masks, X from 0 to 5
-ELEM FULL_MASK[6] = {0x0, 0x1, 0x3, 0x7, 0xF, 0x1F};
-ELEM BIT_MASK[6] = {0x0, 0x1, 0x2, 0x4, 0x8, 0x10};
-
 void assert_dims () {
-	assert (BOARD_ROWS == BOARD_COLS);
-	assert (sizeof(ELEM)*8 >= BOARD_COLS);
+    assert (BOARD_ROWS == BOARD_COLS);
+    assert (BITS_PER_ELEM == 8*sizeof(ELEM));
+    assert (BOARD_ELEMS*BITS_PER_ELEM >= BOARD_ROWS*BOARD_COLS);
+    assert (BOARD_ELEMS*BITS_PER_ELEM - BOARD_ROWS*BOARD_COLS < BITS_PER_ELEM);
 }
 
 void init_board (BOARD b) {
-	for (int i = 0; i < BOARD_ROWS; ++i)
+	for (int i = 0; i < BOARD_ELEMS; ++i)
 		b[i] = 0;
 }
 void init_board_set (BOARD_SET S) {
@@ -20,7 +18,7 @@ void init_board_set (BOARD_SET S) {
 }
 
 void copy_board (BOARD to, BOARD from) {
-	for (int i = 0; i < BOARD_ROWS; ++i)
+	for (int i = 0; i < BOARD_ELEMS; ++i)
 		to[i] = from[i];
 }
 void copy_board_set (BOARD_SET to, BOARD_SET from) {
@@ -29,12 +27,47 @@ void copy_board_set (BOARD_SET to, BOARD_SET from) {
 }
 
 int check_board_full (BOARD_SET S) {
-	for (int i = 0; i < BOARD_ROWS; ++i)
-		if ((S[0][i] | S[1][i]) != 0x7FFF)
-			return 0;
-	return 1;
+        int count = 0;
+
+	for (int i = 0; i < BOARD_ELEMS-1; ++i) {
+	    if ((S[0][i] | S[1][i]) != 0xFFFF)
+		return 0;
+            count += BITS_PER_ELEM;
+        }
+
+        int last = S[0][BOARD_ELEMS-1] | S[1][BOARD_ELEMS-1]; 
+        for (int i = 0; i < BITS_PER_ELEM; i++) {
+            if ((last >> i) & 1)
+                count++;
+        }
+
+	return count == BOARD_ROWS*BOARD_COLS;
 }
 
+int get_square (BOARD b, int row, int col) {
+    int index = row*BOARD_COLS + col;
+    int elem = index / BITS_PER_ELEM;
+    int bit = index - elem*BITS_PER_ELEM;
+
+    return (b[elem] >> bit) & 1;
+}
+
+void set_square (BOARD b, int row, int col) {
+    int index = row*BOARD_COLS + col;
+    int elem = index / BITS_PER_ELEM;
+    int bit = index - elem*BITS_PER_ELEM;
+
+    b[elem] |= (1 << bit);
+}
+
+void unset_square (BOARD b, int row, int col) {
+    int index = row*BOARD_COLS + col;
+    int elem = index / BITS_PER_ELEM;
+    int bit = index - elem*BITS_PER_ELEM;
+
+    b[elem] &= ~(1 << bit);
+}
+    
 void zero_counts (COUNTS* C) {
 	C->p2 = C->p3 = C->p4 = C->p5 = 0;
 	C->o2 = C->o3 = C->o4 = C->o5 = 0;
