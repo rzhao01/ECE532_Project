@@ -24,6 +24,10 @@ typedef struct {
 	int num, life;
 } PLAYER;
 
+typedef struct {
+    int CP5, CO4, CP4, CO3, CP3, CO2, CP2;
+} AI_PLAYER;
+
 #define SQUARE_SIZE  32
 #define STATUSBAR_SIZE 15
 #define EXTRA_WIDTH 200

@@ -20,6 +20,7 @@ int main()
     // outer loop for menu options
     for (;;) {
         BOARD_SET master_set;
+        AI_PLAYER ai = default_ai();
         PLAYER Player1, Player2;
         Player1.num = 0;
         Player2.num = 1;
@@ -54,7 +55,7 @@ int main()
             if (Curr_P.life == HUMAN)
                 status = get_move_player (screen, master_set, Curr_P.num, &row, &col);
             else
-                status = get_move_ai1 (master_set, Curr_P.num, Opp_P.num, &row, &col);
+                status = get_move_ai1 (ai, master_set, Curr_P.num, Opp_P.num, &row, &col);
    
             if (status == 0)
                 break;

@@ -9,6 +9,8 @@
 #include "graphics.h"
 #include "ai.h"
 
+extern int CP5, CO4, CP4, CO3, CP3, CO2, CP2;
+
 int main() {
     return 0;
 }

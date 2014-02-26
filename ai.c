@@ -5,13 +5,26 @@
 #include <assert.h>
 
 #define NABS(x) ((x) > 0 ? (-(x)) : (x))
-#define CP5 1024*1024*1024
-#define CO4 1024*1024*8
-#define CP4 1024*1024
-#define CO3 1024*8
-#define CP3 1024
-#define CO2 8
-#define CP2 8
+
+#define C_P5 1024*1024*1024
+#define C_O4 1024*1024*8
+#define C_P4 1024*8
+#define C_O3 1024*2
+#define C_P3 1024
+#define C_O2 8
+#define C_P2 8
+
+AI_PLAYER default_ai () {
+    AI_PLAYER ai;
+    ai.CP5 = C_P5;
+    ai.CO4 = C_O4;
+    ai.CP4 = C_P4;
+    ai.CO3 = C_O3;
+    ai.CP3 = C_P3;
+    ai.CO2 = C_O2;
+    ai.CP2 = C_P2;
+    return ai;
+}
 
 // more weight to center squares
 inline
@@ -19,7 +32,7 @@ long board_position_weight (int row, int col) {
 	return BOARD_ROWS/2 + NABS(row - BOARD_ROWS/2) + BOARD_COLS/2 + NABS(col - BOARD_COLS/2);
 }
 
-long board_count_score (BOARD_SET S, int p, int o) {
+long board_count_score (AI_PLAYER ai, BOARD_SET S, int p, int o) {
 	long score;
 
 	COUNTS horiz_p = count_horiz (S, p, o);
@@ -39,11 +52,11 @@ long board_count_score (BOARD_SET S, int p, int o) {
 	printf ("\tp5=%3d, o5=%3d\n\tp4=%3d, o4=%3d\n\tp3=%3d, o3=%3d\n\tp2=%3d, o2=%3d\n", 
 			p5,0, p4,o4, p3,o3, p2,o2);
 
-	score = CP5*p5 - CO4*o4 + CP4*p4 - CO3*o3 + CP3*p3 - CO2*o2 + CP2*p2;
+	score = ai.CP5*p5 - ai.CO4*o4 + ai.CP4*p4 - ai.CO3*o3 + ai.CP3*p3 - ai.CO2*o2 + ai.CP2*p2;
 	return score;
 }
 
-int get_move_ai1 (BOARD_SET S, int p, int o, char *row, char *col) {
+int get_move_ai1 (AI_PLAYER ai, BOARD_SET S, int p, int o, char *row, char *col) {
 	BOARD_SET ss;
 
 	int best_row=0, best_col=0;
@@ -58,7 +71,7 @@ int get_move_ai1 (BOARD_SET S, int p, int o, char *row, char *col) {
 			copy_board_set (ss, S);
 			set_square (ss[p], r, c);
 
-			long score = board_position_weight(r, c) + board_count_score(ss, p, o);
+			long score = board_position_weight(r, c) + board_count_score(ai, ss, p, o);
 			
 			printf ("Score (%2d,%2d) -> %ld\n", r, c, score);
 
