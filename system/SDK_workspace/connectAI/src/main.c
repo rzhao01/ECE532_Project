@@ -16,32 +16,22 @@
 #include "touchsensor_buttons.h"
 #include "xintc.h" /* layer 1 interrupt controller device driver */
 #include "tft.h"
+#include "gameboard.h"
 
 #define printf xil_printf
-
-#define BLACK 0x0000
-#define RED 0xF800
-#define GREEN 0x07D0
-#define BLUE 0x001F
-#define YELLOW 0xFF80
-#define WHITE 0xFFFF
-#define ORANGE 0xFCC0
-#define DARK_PURPLE 0xA81F
-#define PINK 0xFADF
-#define LIGHT_BLUE 0x077F
-#define MAGENTA 0xF81F
-#define CYAN 0x07FF
-#define BROWN 0x82E5
 
 void PrintTouchCoordinates(TouchSensor* InstPtr);
 void PrintCircleId(TouchSensor* touchSensor, button_t * Button);
 void PrintRectId(TouchSensor* touchSensor, button_t * Button);
+void PrintGridId(TouchSensor* touchSensor, button_t * Button);
 void blackScreen();
 
 XIntc InterruptController;
 TouchSensor touchSensor;
 ButtonManager_t Manager;
+gameboard_t Gameboard;
 XStatus Status;
+TFT tft;
 
 int main()
 {
@@ -54,7 +44,7 @@ int main()
 	}
     TouchSensorButtons_InitializeManager(&Manager, &touchSensor, &PrintTouchCoordinates);
 
-    button_t MyCircle;
+   /* button_t MyCircle;
     Button_SetCircleDim(&MyCircle, 10, 100, 100);
     Button_AssignHandler(&MyCircle, &PrintCircleId);
     TouchSensorButtons_RegisterButton(&Manager, &MyCircle);
@@ -64,7 +54,13 @@ int main()
     Button_SetRectDim(&MyRect, 20, 20, 300, 20);
     Button_AssignHandler(&MyRect, &PrintRectId);
     TouchSensorButtons_RegisterButton(&Manager, &MyRect);
-    TouchSensorButtons_EnableButton(&MyRect);
+    TouchSensorButtons_EnableButton(&MyRect);*/
+
+    button_t MyGrid;
+    Button_SetGridDim(&MyGrid, SQUARE_DIM, SQUARE_DIM, BOARD_OFFSET_X, BOARD_OFFSET_Y, BOARD_SIZE);
+    Button_AssignHandler(&MyGrid, &PrintGridId);
+    TouchSensorButtons_RegisterButton(&Manager, &MyGrid);
+    TouchSensorButtons_EnableButton(&MyGrid);
 
     //Example of how to disable button below. See header
     //file for details
@@ -77,7 +73,7 @@ int main()
     /********************** TFT Setup *********************/
     blackScreen();
 
-    TFT tft;
+
 	TFT_Initialize(&tft, XPAR_TFT_PERHIPHERAL_0_DEVICE_ID);
 	TFT_SetImageAddress(&tft, XPAR_MCB_DDR2_S0_AXI_BASEADDR);
 	TFT_SetBrightness(&tft, 7);
@@ -85,8 +81,9 @@ int main()
 
 
 	//Render Buttons
-	TouchSensorButtons_RenderButton(&MyCircle, GREEN, &tft);
-	TouchSensorButtons_RenderButton(&MyRect, RED, &tft);
+	//TouchSensorButtons_RenderButton(&MyCircle, GREEN, &tft);
+	//TouchSensorButtons_RenderButton(&MyRect, RED, &tft);
+	TouchSensorButtons_RenderButton(&MyGrid, BLUE, &tft);
 
     /********************** Interrupt Controller Setup *********************/
        /*
@@ -152,6 +149,18 @@ void PrintRectId(TouchSensor* touchSensor, button_t * Button){
 
 }
 
+void PrintGridId(TouchSensor* touchSensor, button_t * Button){
+	printf("Grid Handler\n\r");
+	u16 GridX, GridY;
+	if (Button_GetGridLoc(Button, touchSensor->LastTouch.x, touchSensor->LastTouch.y,
+			&GridX, &GridY)) {
+		printf("Grid Square (%d,%d) was depressed\n\r", GridX, GridY);
+		Gameboard_SetSquare(&Gameboard,GridX,GridY,SQUARESTATE_WHITE);
+		Gameboard_RenderSquare(&Gameboard,GridX,GridY,&tft);
+	} else {
+		printf("Error: Could not look up valid grid square from touch coordinates");
+	}
+}
 //Inialize the screen to red
 void blackScreen() {
 	int i = 0;

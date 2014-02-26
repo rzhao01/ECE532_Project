@@ -19,10 +19,8 @@ extern "C" {
 #include "xil_types.h"
 #include "xil_assert.h"
 #include "xstatus.h"
+#include "graphics.h"
 #include "tft.h"
-
-//sin array will have 90/SIN_DIV elements to capture first quarater of sin
-#define SIN_DIV 15
 
 /************************** Constant Definitions *****************************/
 
@@ -39,13 +37,14 @@ extern "C" {
  */
 typedef void (*TouchSensorButtons_Handler) (void *CallBackRef_Button, void *CallBackRef_TouchSensor);
 
-typedef enum {RECT, CIRCLE} button_shape_t;
+typedef enum {RECT, CIRCLE, GRID} button_shape_t;
 
 typedef struct button_t {
 	button_shape_t shape;
 
 	u16 PosX, PosY; //Used to define location.
 	u16 DimA, DimB; //Used to define size Dim_A = radius in case of circle;
+	u16 GridSize; //Defines the number of subdivisions in the X and Y direction
 
 	int Enabled; //Used to determine if button is enabled
 	TouchSensorButtons_Handler Handler; // Function pointer to the button specific handler.
@@ -81,6 +80,7 @@ void TouchSensorButtons_RemoveButton(ButtonManager_t * Manager, button_t * Butto
 void TouchSensorButtons_RenderButton(button_t * Button, u16 colour, TFT *TftPtr);
 void Button_RenderCircle(button_t * Button, u16 colour, TFT *TftPtr);
 void Button_RenderRect(button_t * Button, u16 colour, TFT *TftPtr);
+void Button_RenderGrid(button_t * Button, u16 colour, TFT *TftPtr);
 
 // Ignore or enable presses on the registered button
 void TouchSensorButtons_EnableButton(button_t * Button);
@@ -98,17 +98,15 @@ button_t * ButtonList_Find(ButtonManager_t * Manager, u16 X, u16 Y);
 //Button functions
 int Button_CheckCircle(button_t * Button, u16 X, u16 Y);
 int Button_CheckRect(button_t * Button, u16 X, u16 Y);
+int Button_CheckRect(button_t * Button, u16 X, u16 Y);
+int Button_GetGridLoc(button_t * Button, u16 TouchX, u16 TouchY, u16 * GridX, u16 * GridY);
 
 
 void Button_SetCircleDim(button_t * Button, u16 radius, u16 X, u16 Y);
 void Button_SetRectDim(button_t * Button,  u16 LenX, u16 LenY, u16 X, u16 Y);
+void Button_SetGridDim(button_t * Button,  u16 LenX, u16 LenY, u16 X, u16 Y, u16 GridSize);
 void Button_AssignHandler(button_t * Button, void * FuncPtr);
 
-//sin and cos lookup for rendering circle
-double sin_lookup(double i);
-double cos_lookup(double i);
-void render_line(double x1, double y1, double x2, double y2, u16 colour, TFT *TftPtr);
-void draw_line(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr);
 
 /************************** Variable Definitions *****************************/
 

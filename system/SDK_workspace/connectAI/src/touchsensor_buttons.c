@@ -11,7 +11,6 @@
 #include "touchsensor_buttons.h"
 #include "xil_assert.h"
 
-double sin_a[360/SIN_DIV] = {0, 0.258819045, 0.5, 0.707106781, 0.866025404, 0.965925826, 1};
 
 /************************** Constant Definitions *****************************/
 
@@ -185,6 +184,68 @@ int Button_CheckRect(button_t * Button, u16 X, u16 Y)
 /*****************************************************************************/
 /**
 *
+*  Checks to see if a press falls within the bounds of a grid
+*
+* @param 	Button, a grid button to be compared against the point
+* @param 	X, X coord of the touch
+* @param    Y, Y coord of the touch
+*
+*
+******************************************************************************/
+int Button_CheckGrid(button_t * Button, u16 X, u16 Y)
+{
+	Xil_AssertNonvoid(Button);
+	if ((X >= (Button->PosX+(Button->DimA)*(Button->GridSize)))  ||
+		 (X < (Button->PosX))) {
+		return 0;
+	}
+
+	if ((Y >= (Button->PosY+(Button->DimB)*(Button->GridSize))) ||
+		 (Y < (Button->PosY))) {
+		return 0;
+	}
+	return 1;
+}
+
+/*****************************************************************************/
+/**
+*
+*  Finds which square of teh grid was pressed from a touchsensor X, Y location,
+*  and a grid button.
+*
+* @param 	Button, a grid button to be compared against the point
+* @param 	TouchX, X coord of the touch
+* @param    TouchY, Y coord of the touch
+* @param 	GridX, callers pointer for X coord of the grid square
+* @param    GridY, callers pointer for Y coord of the grid square
+*
+*
+*
+******************************************************************************/
+int Button_GetGridLoc(button_t * Button, u16 TouchX, u16 TouchY, u16 * GridX, u16 * GridY)
+{
+	Xil_AssertNonvoid(Button);
+	Xil_AssertNonvoid(Button->shape == GRID);
+
+	if (TouchX < Button->PosX || TouchY < Button->PosY)
+		return 0;
+
+	u16 TempX = (TouchX - Button->PosX)/(Button->DimA);
+	u16 TempY = (TouchY - Button->PosY)/(Button->DimB);
+
+	if (TempX < Button->GridSize || TempY < Button->GridSize){
+		*GridX = TempX;
+		*GridY = TempY;
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+
+/*****************************************************************************/
+/**
+*
 * Prepends a button to the beginning of the button list. Buttons at the front
 * of the list have the highest prioirty. (Ie, if they overlap and existing one,
 * the press is registered to the first).
@@ -231,6 +292,12 @@ button_t * ButtonList_Find(ButtonManager_t * Manager, u16 X, u16 Y)
 					break;
 				case RECT:
 					if (Button_CheckRect(Node, X, Y))
+					{
+						return Node;
+					}
+					break;
+				case GRID:
+					if (Button_CheckGrid(Node, X, Y))
 					{
 						return Node;
 					}
@@ -309,6 +376,31 @@ void Button_SetRectDim(button_t * Button, u16 LenX, u16 LenY, u16 X, u16 Y)
 	Button->DimA = LenX;
 	Button->DimB = LenY;
 }
+
+/*****************************************************************************/
+/**
+*
+*  Initalizes a button to a rectangle
+*
+* @param 	Button, the button to be initialized
+* @param    radius, radius of the button
+* @param 	X, X coord of the button's origin
+* @param    Y, Y coord of the button's origin
+*
+*
+******************************************************************************/
+void Button_SetGridDim(button_t * Button, u16 LenX, u16 LenY, u16 X, u16 Y, u16 GridSize)
+{
+	Xil_AssertVoid(Button);
+	Button->shape = GRID;
+	Button->PosX = X;
+	Button->PosY = Y;
+	Button->DimA = LenX;
+	Button->DimB = LenY;
+	Button->GridSize = GridSize;
+
+}
+
 
 /*****************************************************************************/
 /**
@@ -416,78 +508,14 @@ void TouchSensorButtons_RenderButton(button_t * Button, u16 colour, TFT * TftPtr
 					case RECT:
 						Button_RenderRect(Button, colour, TftPtr);
 						break;
+					case GRID:
+						Button_RenderGrid(Button, colour, TftPtr);
+						break;
 					default:
 						break;
 				}
 }
 
-/*****************************************************************************/
-/**
-*
-* Look up sin value from a table
-*
-* @param 	i, angle in degrees
-*
-******************************************************************************/
-double sin_lookup(double i){
-	int sign = 1;
-	int index = 0;
-	if(i>180){
-		sign = -1;
-		i = i - 180;
-	}
-	if (i>90)
-		i = 180 - i;
-	index = i/SIN_DIV;
-	double result = sign*sin_a[index];
-	return result;
-}
-
-/*****************************************************************************/
-/**
-*
-* Look up cos value from a table
-*
-* @param 	i, angle in degrees
-*
-******************************************************************************/
-double cos_lookup(double i){
-	if(i>270)
-		i = i - 270;
-	else
-		i = i + 90;
-	return sin_lookup(i);
-}
-
-/*****************************************************************************/
-/**
-*
-* Render a straight line
-*
-* @param 	x1,y1, starting point coordinates
-* @param 	x2,y2, end point coordinates
-* @param 	colour, colour of the line
-* @param	TftPtr, pointer to the tft instance on which button is rendered
-*
-******************************************************************************/
-void render_line(double x1, double y1, double x2, double y2, u16 colour, TFT *TftPtr){
-	double m = (y2-y1)/(x2-x1);
-	if (x1>x2){
-		draw_line(x2,y2,x1,y1,m,colour, TftPtr);
-		return;
-	}
-	draw_line(x1,y1,x2,y2,m,colour, TftPtr);
-}
-
-void draw_line(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr){
-	double i = x1;
-	double j = y1;
-	while(i<=x2 ){
-		TFT_WriteToPixel((int)i, (int)j, colour, TFT_GetImageAddress(TftPtr));
-		i++;
-		j = j+m;
-	}
-}
 /*****************************************************************************/
 /**
 *
@@ -500,17 +528,9 @@ void draw_line(double x1, double y1, double x2, double y2, double m, u16 colour,
 *
 ******************************************************************************/
 void Button_RenderCircle(button_t * Button, u16 colour, TFT *TftPtr){
-	double x, y, old_x, old_y;
-	int i = 0;
-	x = (Button->DimA*(cos_lookup(i))) + Button->PosX;
-	y = (Button->DimA*(sin_lookup(i))) + Button->PosY;;
-	for(i = SIN_DIV; i<=360; i = i+SIN_DIV){
-		old_x = x;
-		old_y = y;
-		x = (Button->DimA*(cos_lookup(i))) + Button->PosX;
-		y = (Button->DimA*(sin_lookup(i))) + Button->PosY;
-		render_line(old_x, old_y, x, y, colour, TftPtr);
-	}
+
+	Xil_AssertVoid(Button != NULL);
+	Graphics_RenderCircle(Button->PosX, Button->PosY, Button->DimA, colour, TftPtr);
 }
 
 /*****************************************************************************/
@@ -540,6 +560,38 @@ void Button_RenderRect(button_t * Button, u16 colour, TFT *TftPtr){
 			TFT_WriteToPixel(TopX, i, colour, TFT_GetImageAddress(TftPtr));
 	}
 }
+/*****************************************************************************/
+/**
+*
+* Render a wireframe rectangle around button on TFT screen
+*
+* @param 	Button, button to be rendered
+* @param 	colour, colour of the button
+* @param	TftPtr, pointer to the tft instance on which button is rendered
+*
+*
+******************************************************************************/
+void Button_RenderGrid(button_t * Button, u16 colour, TFT *TftPtr){
+	int i, j;
+	int GridSize = Button->GridSize;
+	int BottomX = Button->PosX;
+	int TopX = BottomX + (Button->DimA)*GridSize;
+	int BottomY = Button->PosY;
+	int TopY = BottomY + (Button->DimB)*GridSize;
+
+
+	for (j = 0; j <= GridSize; j++) {
+		for (i = BottomX; i <= TopX; i++) {
+					TFT_WriteToPixel(i, BottomY + j*Button->DimB, colour, TFT_GetImageAddress(TftPtr));
+		}
+		for (i = BottomY; i <= TopY; i++) {
+				TFT_WriteToPixel(BottomX + j*Button->DimA, i, colour, TFT_GetImageAddress(TftPtr));
+		}
+	}
+}
+
+
+
 
 
 
