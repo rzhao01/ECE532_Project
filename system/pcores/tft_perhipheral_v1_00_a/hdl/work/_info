@@ -1,0 +1,396 @@
+m255
+K3
+13
+cModel Technology
+Z0 dC:\Xilinx\14.2\ISE_DS\edk_user_repository\MyProcessorIPLib\pcores\tft_perhipheral_v1_00_a\hdl
+Edcm_tft9
+Z1 w1361897414
+Z2 DPx6 unisim 11 vcomponents 0 22 8T5IogZ]Om:_d>aF`2QCV0
+Z3 DPx4 ieee 11 numeric_std 0 22 O3PF8EB`?j9=z7KT`fn941
+Z4 DPx4 ieee 15 std_logic_arith 0 22 4`Y?g_lkdn;7UL9IiJck01
+Z5 DPx4 ieee 18 std_logic_unsigned 0 22 RYmj;=TK`k=k>D@Cz`zoB3
+Z6 DPx3 std 6 textio 0 22 5>J:;AW>W0[[dW0I6EN1Q0
+Z7 DPx4 ieee 14 std_logic_1164 0 22 5=aWaoGZSMWIcH0i^f`XF1
+Z8 dC:\Xilinx\14.2\ISE_DS\edk_user_repository\MyProcessorIPLib\pcores\tft_perhipheral_v1_00_a\hdl
+Z9 8vhdl/dcm_TFT9.vhd
+Z10 Fvhdl/dcm_TFT9.vhd
+l0
+L75
+V1=;2O@1a[=R20S9E2z3PA3
+Z11 OL;C;10.1c;51
+32
+Z12 !s108 1361921635.545000
+Z13 !s90 -reportprogress|300|vhdl/dcm_TFT9.vhd|
+Z14 !s107 vhdl/dcm_TFT9.vhd|
+Z15 tExplicit 1
+!s100 Hg6TldlMLSQSWZUROD65[2
+!i10b 1
+Axilinx
+R2
+R3
+R4
+R5
+R6
+R7
+DEx4 work 8 dcm_tft9 0 22 1=;2O@1a[=R20S9E2z3PA3
+l104
+L88
+V^SP9Oi^S@k5bj5>7>`]iC2
+R11
+32
+R12
+R13
+R14
+R15
+!s100 1OG9;i5gZM4acnmGY^Ge>3
+!i10b 1
+Einputsync
+Z16 w1302172402
+R6
+R7
+R8
+Z17 8vhdl/digilent/InputSync.vhd
+Z18 Fvhdl/digilent/InputSync.vhd
+l0
+L23
+VmgXZ;dM:EG^AaM1>U4fZ;3
+R11
+32
+Z19 !s108 1361921635.420000
+Z20 !s90 -reportprogress|300|vhdl/digilent/InputSync.vhd|
+Z21 !s107 vhdl/digilent/InputSync.vhd|
+R15
+!s100 HZOcY48Z^mU@]CiW<`:XU0
+!i10b 1
+Abehavioral
+R6
+R7
+DEx4 work 9 inputsync 0 22 mgXZ;dM:EG^AaM1>U4fZ;3
+l45
+L29
+V1h?_FKmo<j>Zjoe3MNZZT1
+R11
+32
+R19
+R20
+R21
+R15
+!s100 >keBdMo700WOJF:J_zoL_2
+!i10b 1
+Einputsyncv
+R16
+R6
+R7
+R8
+R17
+R18
+l0
+L61
+V16^nbHHmE3kd@86BPmC8A1
+R11
+32
+R19
+R20
+R21
+R15
+!s100 XABnKUN7<DU=N2;a6>VYF1
+!i10b 1
+Abehavioral
+R6
+R7
+Z22 DEx4 work 10 inputsyncv 0 22 16^nbHHmE3kd@86BPmC8A1
+l87
+L67
+V72hGTb3]F`K76jXCfCCLP2
+R11
+32
+R19
+R20
+R21
+R15
+!s100 zSBJz^4g^ESTO8Vg84S8`0
+!i10b 1
+Elocalrst
+Z23 w1301985394
+R6
+R7
+R8
+Z24 8vhdl/digilent/LocalRst.vhd
+Z25 Fvhdl/digilent/LocalRst.vhd
+l0
+L32
+Vf_QlY6ciaf>o4oloIkPDV3
+R11
+32
+Z26 !s108 1361921633.595000
+Z27 !s90 -reportprogress|300|vhdl/digilent/LocalRst.vhd|
+Z28 !s107 vhdl/digilent/LocalRst.vhd|
+R15
+!s100 ;PPGz>bQcU3l`hQjiTX=10
+!i10b 1
+Abehavioral
+R6
+R7
+Z29 DEx4 work 8 localrst 0 22 f_QlY6ciaf>o4oloIkPDV3
+l41
+L39
+Vf@M=ZD29S1k^U;A9iIVoN1
+R11
+32
+R26
+R27
+R28
+R15
+!s100 k87j=PoeZMjgM61N:8n1e2
+!i10b 1
+Epwm
+Z30 w1302759604
+R4
+R5
+R6
+R7
+R8
+Z31 8vhdl/digilent/PWM.vhd
+Z32 Fvhdl/digilent/PWM.vhd
+l0
+L34
+V<MMQ=e3G=NW7okMzZ_K[o3
+R11
+32
+Z33 !s108 1361921635.310000
+Z34 !s90 -reportprogress|300|vhdl/digilent/PWM.vhd|
+Z35 !s107 vhdl/digilent/PWM.vhd|
+R15
+!s100 46f7i[k[bVX55[dmal=SJ0
+!i10b 1
+Abehavioral
+R4
+R5
+R6
+R7
+Z36 DEx4 work 3 pwm 0 22 <MMQ=e3G=NW7okMzZ_K[o3
+l53
+L48
+VIKZeiaXJh:?o5Vih6fFj`2
+R11
+32
+R33
+R34
+R35
+R15
+!s100 ZmiNe3RzT`^7hoTm?kXc?2
+!i10b 1
+Esyscon
+Z37 w1361917585
+R2
+R5
+Z38 DPx4 ieee 9 math_real 0 22 :iME`dTX54_U49lJNF5JI3
+R4
+R6
+R7
+R8
+Z39 8vhdl/SysCon.vhd
+Z40 Fvhdl/SysCon.vhd
+l0
+L31
+VTHaWO?2CR2NUnj6K^6k1j3
+R11
+32
+Z41 !s108 1361921635.940000
+Z42 !s90 -reportprogress|300|vhdl/SysCon.vhd|
+Z43 !s107 vhdl/SysCon.vhd|
+R15
+!s100 @_1o<@YZCHLhVL@U]IR_c0
+!i10b 1
+Abehavioral
+R22
+R2
+R5
+R38
+R4
+R6
+R7
+DEx4 work 6 syscon 0 22 THaWO?2CR2NUnj6K^6k1j3
+l86
+L42
+VFaAH;bHWd]?aI?9ZK_mID1
+R11
+32
+R41
+R42
+R43
+R15
+!s100 >RM87TG<lOiZO;OR=RC:N0
+!i10b 1
+Etft_perhipheral
+Z44 w1361904878
+Z45 DEx24 axi_master_burst_v1_00_a 16 axi_master_burst 0 22 GNbj;Dl?kklGfBERmK:DE1
+Z46 DPx19 proc_common_v3_00_a 14 family_support 0 22 M>VdD[?IQ_J<3anfbJYJD1
+Z47 DPx8 synopsys 10 attributes 0 22 J^T`lPA_8_J<l8kQiVE]>2
+Z48 DPx4 ieee 14 std_logic_misc 0 22 >dU:RInm^_6_mBJ^<6QGY2
+Z49 DEx21 axi_lite_ipif_v1_01_a 13 axi_lite_ipif 0 22 Fzb_11geQY0Sn]_C1FXZQ3
+R2
+R3
+Z50 DEx19 proc_common_v3_00_a 10 soft_reset 0 22 0;k0TXGT?m^`AXFR0P]7R2
+Z51 DPx19 proc_common_v3_00_a 8 ipif_pkg 0 22 3?=iE3WDFYERHH?>TEf3S1
+Z52 DPx19 proc_common_v3_00_a 15 proc_common_pkg 0 22 3E3GzzfeZk^:Y<0U>TCzn1
+R5
+R4
+R6
+R7
+R8
+Z53 8vhdl/tft_perhipheral.vhd
+Z54 Fvhdl/tft_perhipheral.vhd
+l0
+L153
+Vj_8N9eZ=D0Wh[Zg@KzeHd3
+!s100 d=;?TF[D8843_G^Rh=:5I2
+R11
+32
+!i10b 1
+Z55 !s108 1361921636.840000
+Z56 !s90 -reportprogress|300|vhdl/tft_perhipheral.vhd|
+Z57 !s107 vhdl/tft_perhipheral.vhd|
+R15
+Aimp
+R50
+R45
+R49
+R46
+R47
+R48
+R2
+R3
+R51
+R52
+R5
+R4
+R6
+R7
+Z58 DEx4 work 15 tft_perhipheral 0 22 j_8N9eZ=D0Wh[Zg@KzeHd3
+l512
+L286
+Z59 VFo396>l=MEASQKiHQS9DC1
+Z60 !s100 >OOmHioBL?0i4^_HS4OGB2
+R11
+32
+!i10b 1
+R55
+R56
+R57
+R15
+Etftctl
+Z61 w1361917611
+R2
+R3
+R6
+R7
+R8
+Z62 8vhdl/TFTCtl.vhd
+Z63 Fvhdl/TFTCtl.vhd
+l0
+L43
+V84^MgLJB0nz1iMbU<5:1W3
+R11
+32
+Z64 !s108 1361921636.320000
+Z65 !s90 -reportprogress|300|vhdl/TFTCtl.vhd|
+Z66 !s107 vhdl/TFTCtl.vhd|
+R15
+!s100 K9=cQ3VT;2[5jze]_OCda2
+!i10b 1
+Abehavioral
+R36
+R4
+R5
+Z67 DEx4 work 14 videotimingctl 0 22 _lH5=K]AMcZAoIX43KNQJ0
+R2
+R3
+R6
+R7
+DEx4 work 6 tftctl 0 22 84^MgLJB0nz1iMbU<5:1W3
+l139
+L89
+V@?=TD@^I9FCXnlYd@5HPg0
+!s100 `F<Xk=nc0JNKXBg=S=9`M0
+R11
+32
+R64
+R65
+R66
+R15
+!i10b 1
+vuser_logic
+!s100 5DLM`1z`o]QP3CNSl>>mH2
+I^R[_no`2nm[EJ2mH=fizh1
+VEHAj8fb1:NJ6EifW8VD?m2
+R8
+w1361904449
+8verilog/user_logic.v
+Fverilog/user_logic.v
+L0 54
+Z68 OL;L;10.1c;51
+r1
+31
+!s90 -reportprogress|300|verilog/user_logic.v|
+o-L mtiAvm -L mtiOvm -L mtiUvm -L mtiUPF
+!i10b 1
+!s85 0
+!s108 1361921636.740000
+!s107 verilog/user_logic.v|
+Pvideo
+R6
+R7
+w1305348518
+R8
+8vhdl/digilent/Video.vhd
+Fvhdl/digilent/Video.vhd
+l0
+L29
+Vli=SUOjTAVWhj<L2H`AVY2
+R11
+32
+R15
+!s100 bG^f4[OT7h>D>13^zYMah0
+!s108 1361921633.790000
+!s90 -reportprogress|300|vhdl/digilent/Video.vhd|
+!s107 vhdl/digilent/Video.vhd|
+!i10b 1
+Evideotimingctl
+Z69 w1361915770
+R4
+R5
+R6
+R7
+R8
+Z70 8vhdl/digilent/VideoTimingCtl.vhd
+Z71 Fvhdl/digilent/VideoTimingCtl.vhd
+l0
+L35
+V_lH5=K]AMcZAoIX43KNQJ0
+R11
+32
+Z72 !s108 1361921633.685000
+Z73 !s90 -reportprogress|300|vhdl/digilent/VideoTimingCtl.vhd|
+Z74 !s107 vhdl/digilent/VideoTimingCtl.vhd|
+R15
+!s100 6HX[l?z[4KDA8o=`JR==H3
+!i10b 1
+Abehavioral
+R29
+R4
+R5
+R6
+R7
+R67
+l90
+L47
+V@mjQD6UAHVm7:J>KDno>C1
+R11
+32
+R72
+R73
+R74
+R15
+!s100 7?nL1X:O:CA;D`<R[:`NZ2
+!i10b 1

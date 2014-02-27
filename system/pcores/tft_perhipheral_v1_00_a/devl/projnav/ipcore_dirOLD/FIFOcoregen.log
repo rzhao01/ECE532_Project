@@ -1,0 +1,73 @@
+Welcome to Xilinx CORE Generator.
+Help system initialized.
+The IP Catalog has been reloaded.
+Wrote CGP file for project 'FIFOcoregen'.
+Customize and Generate
+INFO:sim:172 - Generating IP...
+Applying current project options...
+Finished applying current project options.
+Resolving generics for 'FIFO_TFT'...
+Applying external generics to 'FIFO_TFT'...
+Delivering associated files for 'FIFO_TFT'...
+WARNING:sim - Component fifo_generator_v9_2 does not have a valid model name for VHDL synthesis
+Delivering EJava files for 'FIFO_TFT'...
+Generating implementation netlist for 'FIFO_TFT'...
+INFO:sim - Pre-processing HDL files for 'FIFO_TFT'...
+WARNING:sim - BlackBox generator run option '-ifmt' found multiple times. Only the first occurence is considered.
+Running synthesis for 'FIFO_TFT'
+Running ngcbuild...
+Writing VHO instantiation template for 'FIFO_TFT'...
+Writing VHDL instantiation wrapper for 'FIFO_TFT'...
+Writing VHDL behavioral simulation model for 'FIFO_TFT'...
+WARNING:sim - Overwriting existing file C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT/doc/fifo_generator_v9_2_vinfo.html with file from view xilinx_documentation
+Delivered 3 files into directory C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT
+Delivered 1 file into directory C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT
+Generating ASY schematic symbol...
+INFO:sim:949 - Finished generation of ASY schematic symbol.
+Generating metadata file...
+Generating ISE project file for 'FIFO_TFT'...
+Generating ISE project...
+XCO file found: FIFO_TFT.xco
+XMDF file found: FIFO_TFT_xmdf.tcl
+Adding C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.asy -view all -origin_type imported
+Adding C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.ngc -view all -origin_type created
+Checking file
+"C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipher
+al_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.ngc" for project device
+match ...
+File
+"C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipher
+al_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.ngc" device information
+matches project device.
+Adding C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.vhd -view all -origin_type created
+INFO:HDLCompiler:1061 - Parsing VHDL file
+   "C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhip
+   heral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.vhd" into library work
+INFO:ProjectMgmt - Parsing design hierarchy completed successfully.
+Adding C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.vho -view all -origin_type imported
+Adding C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhipheral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT_synth.vhd -view all -origin_type created
+INFO:HDLCompiler:1061 - Parsing VHDL file
+   "C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhip
+   heral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT_synth.vhd" into
+   library work
+INFO:ProjectMgmt - Parsing design hierarchy completed successfully.
+WARNING:ProjectMgmt - Duplicate Design Unit 'FIFO_TFT' found in library 'work'
+WARNING:ProjectMgmt -   
+   "C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhip
+   heral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT_synth.vhd" line 57
+   (active)
+WARNING:ProjectMgmt -   
+   "C:/Xilinx/14.2/ISE_DS/edk_user_repository/MyProcessorIPLib/pcores/tft_perhip
+   heral_v1_00_a/devl/projnav/ipcore_dir/tmp/_cg/FIFO_TFT.vhd" line 43 
+INFO:TclTasksC:2116 - The automatic calculation of top has been turned-off.
+   Please set the new top explicitly by running the "project set top" command.
+   To re-calculate the new top automatically, set the "Auto Implementation Top"
+   property to true.
+Top level has been set to "/FIFO_TFT"
+Generating README file...
+Generating FLIST file...
+INFO:sim:948 - Finished FLIST file generation.
+Launching README viewer...
+Moving files to output directory...
+Finished moving files to output directory
+Saved CGP file for project 'FIFOcoregen'.

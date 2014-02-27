@@ -3,3 +3,5 @@ Course Project for ECE532
 Connect 5 with an AI that runs in hardware on an Atlys board with a Xillinx FPGA. Vivado HLS will be used to help generated the hardware.
 
 Board is represented in bitboard format. Each row is an integer, so board is int[BOARD_ROWS]. Can have at most 32 columns. Unused columns are wasted.
+
+Requires libsdl1.2-dev and libsdl-gfx1.2-dev
