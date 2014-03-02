@@ -26,19 +26,36 @@
 
 
 /**************************** Type Definitions *******************************/
+typedef struct move_t {
+	u32 X;
+	u32 Y;
+} move_t;
+
+typedef enum player_mode_t {
+	human,
+	fpga,
+	uart
+} player_mode_t;
+
 
 typedef struct gameboard_t {
 	u32 BlackPositions [BOARD_SIZE];
 	u32 WhitePositions [BOARD_SIZE];
+
+	move_t MoveBuffer[BOARD_SIZE*BOARD_SIZE];
+	volatile u16 MoveBufferSize;
+
+	player_mode_t WhiteMode, BlackMode;
+
+	TFT* TftPtr;
 } gameboard_t;
 
+
 typedef enum square_state_t {
-	SQUARESTATE_UNPLAYED,
-	SQUARESTATE_WHITE,
-	SQUARESTATE_BLACK
+	unplayed,
+	white,
+	black
 } square_state_t;
-
-
 
 
 /***************** Macros (Inline Functions) Definitions *********************/
@@ -46,13 +63,16 @@ typedef enum square_state_t {
 
 /************************** Function Prototypes ******************************/
 
-void Gameboard_Intialize(gameboard_t * Gameboard);
+void Gameboard_Initialize(gameboard_t * Gameboard);
 
 void Gameboard_SetSquare(gameboard_t * Gameboard, u32 X, u32 Y, square_state_t State);
 square_state_t Gameboard_GetSquare(gameboard_t * Gameboard, u32 X, u32 Y);
+void Gameboard_PlayMove(gameboard_t * Gameboard, u32 X, u32 Y);
 
-void Gameboard_RenderSquare(gameboard_t * Gameboard, u32 X, u32 Y, TFT * TftPtr);
-void Gameboard_RenderBlankBoard(TFT * TftPtr);
+void Gameboard_RenderSquare(gameboard_t * Gameboard, u32 X, u32 Y);
+void Gameboard_RenderBlankBoard();
+
+
 
 /************************** Variable Definitions *****************************/
 

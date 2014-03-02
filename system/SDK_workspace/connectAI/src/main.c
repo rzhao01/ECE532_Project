@@ -21,9 +21,7 @@
 #define printf xil_printf
 
 void PrintTouchCoordinates(TouchSensor* InstPtr);
-void PrintCircleId(TouchSensor* touchSensor, button_t * Button);
-void PrintRectId(TouchSensor* touchSensor, button_t * Button);
-void PrintGridId(TouchSensor* touchSensor, button_t * Button);
+void HandleGameboardTouch(TouchSensor* touchSensor, button_t * Button);
 void blackScreen();
 
 XIntc InterruptController;
@@ -44,23 +42,11 @@ int main()
 	}
     TouchSensorButtons_InitializeManager(&Manager, &touchSensor, &PrintTouchCoordinates);
 
-   /* button_t MyCircle;
-    Button_SetCircleDim(&MyCircle, 10, 100, 100);
-    Button_AssignHandler(&MyCircle, &PrintCircleId);
-    TouchSensorButtons_RegisterButton(&Manager, &MyCircle);
-    TouchSensorButtons_EnableButton(&MyCircle);
-
-    button_t MyRect;
-    Button_SetRectDim(&MyRect, 20, 20, 300, 20);
-    Button_AssignHandler(&MyRect, &PrintRectId);
-    TouchSensorButtons_RegisterButton(&Manager, &MyRect);
-    TouchSensorButtons_EnableButton(&MyRect);*/
-
-    button_t MyGrid;
-    Button_SetGridDim(&MyGrid, SQUARE_DIM, SQUARE_DIM, BOARD_OFFSET_X, BOARD_OFFSET_Y, BOARD_SIZE);
-    Button_AssignHandler(&MyGrid, &PrintGridId);
-    TouchSensorButtons_RegisterButton(&Manager, &MyGrid);
-    TouchSensorButtons_EnableButton(&MyGrid);
+    button_t GameboardGridButton;
+    Button_SetGridDim(&GameboardGridButton, SQUARE_DIM, SQUARE_DIM, BOARD_OFFSET_X, BOARD_OFFSET_Y, BOARD_SIZE);
+    Button_AssignHandler(&GameboardGridButton, &HandleGameboardTouch);
+    TouchSensorButtons_RegisterButton(&Manager, &GameboardGridButton);
+    TouchSensorButtons_EnableButton(&GameboardGridButton);
 
     //Example of how to disable button below. See header
     //file for details
@@ -83,7 +69,12 @@ int main()
 	//Render Buttons
 	//TouchSensorButtons_RenderButton(&MyCircle, GREEN, &tft);
 	//TouchSensorButtons_RenderButton(&MyRect, RED, &tft);
-	TouchSensorButtons_RenderButton(&MyGrid, BLUE, &tft);
+	TouchSensorButtons_RenderButton(&GameboardGridButton, BLUE, &tft);
+
+
+    Gameboard_Initialize(&Gameboard);
+    Gameboard.TftPtr = &tft;
+
 
     /********************** Interrupt Controller Setup *********************/
        /*
@@ -118,13 +109,32 @@ int main()
 
        XIntc_Enable(&InterruptController,
     		   XPAR_AXI_INTC_0_TOUCHSENSOR_0_INTERRUPT_INTR);
-
        microblaze_enable_interrupts();
 
-       printf("Beginning infinite loop\n\r");
-
 	while (1) {
-		//Loop infinitely waiting on touch sensor interrupts
+
+		int CurrentMove = Gameboard.MoveBufferSize;
+		player_mode_t CurrentPlayerMode = (CurrentMove % 2) ? Gameboard.WhiteMode : Gameboard.BlackMode;
+
+		switch (CurrentPlayerMode){
+			case human:
+			    TouchSensorButtons_EnableButton(&GameboardGridButton);
+
+				break;
+			case fpga:
+				TouchSensorButtons_DisableButton(&GameboardGridButton);
+
+				break;
+			case uart:
+				TouchSensorButtons_DisableButton(&GameboardGridButton);
+
+				break;
+			default:
+				TouchSensorButtons_EnableButton(&GameboardGridButton);
+				break;
+			}
+
+		while(CurrentMove == Gameboard.MoveBufferSize);
 	}
 
 	return 0;
@@ -135,31 +145,16 @@ void PrintTouchCoordinates(TouchSensor* InstPtr){
 	printf("X, Y: %d, %d\n\r", InstPtr->LastTouch.x, InstPtr->LastTouch.y);
 }
 
-//Example button handler for the circle button added
-void PrintCircleId(TouchSensor* touchSensor, button_t * Button){
-	printf("Circle Handler\n\r");
-	printf("X, Y: %d, %d\n\r", touchSensor->LastTouch.x, touchSensor->LastTouch.y);
 
-}
-
-//Example button handler for the rectangle button added
-void PrintRectId(TouchSensor* touchSensor, button_t * Button){
-	printf("Rect Handler\n\r");
-	printf("X, Y: %d, %d\n\r", touchSensor->LastTouch.x, touchSensor->LastTouch.y);
-
-}
-
-void PrintGridId(TouchSensor* touchSensor, button_t * Button){
-	printf("Grid Handler\n\r");
+void HandleGameboardTouch(TouchSensor* touchSensor, button_t * Button){
 	u16 GridX, GridY;
 	if (Button_GetGridLoc(Button, touchSensor->LastTouch.x, touchSensor->LastTouch.y,
 			&GridX, &GridY)) {
-		printf("Grid Square (%d,%d) was depressed\n\r", GridX, GridY);
-		Gameboard_SetSquare(&Gameboard,GridX,GridY,SQUARESTATE_WHITE);
-		Gameboard_RenderSquare(&Gameboard,GridX,GridY,&tft);
+			Gameboard_PlayMove(&Gameboard,GridX,GridY);
 	} else {
 		printf("Error: Could not look up valid grid square from touch coordinates");
 	}
+
 }
 //Inialize the screen to red
 void blackScreen() {
