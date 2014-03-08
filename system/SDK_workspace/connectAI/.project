@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>connectAI</name>
-	<comment>connectAI_bsp_0 - microblaze_0</comment>
+	<comment></comment>
 	<projects>
 		<project>connectAI_bsp_0</project>
+		<project>system_hw_platform</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

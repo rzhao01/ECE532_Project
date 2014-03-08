@@ -3,7 +3,7 @@
 	<name>connectAI_bsp_0</name>
 	<comment></comment>
 	<projects>
-		<project>revA_hw_platform</project>
+		<project>system_hw_platform</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
