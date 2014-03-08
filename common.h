@@ -3,9 +3,9 @@
 
 #define GRAPHICS
 
-#define BOARD_ROWS 15
-#define BOARD_COLS 15
-#define BOARD_ELEMS 8 
+#define BOARD_ROWS 11
+#define BOARD_COLS 11
+#define BOARD_ELEMS 4
 #define BITS_PER_ELEM 32
 
 typedef int ELEM;
