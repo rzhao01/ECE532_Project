@@ -42,14 +42,14 @@ int drawGrid(SDL_Surface *screen)
 
 // draw a single square
 int drawSquare(SDL_Surface* screen, char row, char col, char square) {
-  if (square == P1) {
+  if (square == STONE_P1) {
     // draw a cross
     lineColor(screen, col*SQUARE_SIZE+2 + EXTRA_WIDTH/2, row*SQUARE_SIZE+2, 
                       (col+1)*SQUARE_SIZE-2 + EXTRA_WIDTH/2, (row+1)*SQUARE_SIZE-2, RED);
     lineColor(screen, (col+1)*SQUARE_SIZE-2 + EXTRA_WIDTH/2, row*SQUARE_SIZE+2,
                       col*SQUARE_SIZE+2 + EXTRA_WIDTH/2, (row+1)*SQUARE_SIZE-2, RED);
   }
-  else if (square == P2) {
+  else if (square == STONE_P2) {
     circleColor(screen, col*SQUARE_SIZE + SQUARE_SIZE/2 + EXTRA_WIDTH/2, row*SQUARE_SIZE + SQUARE_SIZE/2, 
                 SQUARE_SIZE/2 - 2, YELLOW);
   }
@@ -57,17 +57,18 @@ int drawSquare(SDL_Surface* screen, char row, char col, char square) {
 }
 
 // draw the board
-int drawBoardSet(SDL_Surface* screen, BOARD_SET S)
+int drawBoard(SDL_Surface* screen, BOARD b)
 {
 #ifdef GRAPHICS
   drawGrid (screen);
 
   for (int row = 0; row < BOARD_ROWS; ++row) {
     for (int col = 0; col < BOARD_COLS; ++col) {
-      if(get_square (S[P1], row, col))
-        drawSquare (screen, row, col, P1);
-      else if(get_square (S[P2], row, col))
-        drawSquare (screen, row, col, P2);
+      ELEM elem = get_square (b, row, col);
+      if (elem == STONE_P1)
+        drawSquare (screen, row, col, STONE_P1);
+      else if (elem == STONE_P2)
+        drawSquare (screen, row, col, STONE_P2);
     }
   }
   SDL_UpdateRect(screen, 0,0,0,0);
@@ -109,7 +110,7 @@ int msgWin(SDL_Surface *screen, PLAYER player)
 #ifdef GRAPHICS
   char buffer[200];
   sprintf (buffer, "Player %d [%s] Wins. Any Key to Return", 
-                    player.num+1, player.life==HUMAN ? "HUMAN" : "AI");
+                    (int)player.num+1, player.type==HUMAN ? "HUMAN" : "AI");
   msgStatusbar(screen,buffer, RED);
   SDL_Delay(1000);
 #endif
@@ -130,21 +131,21 @@ int mainMenu(SDL_Surface *screen, PLAYER* Player1, PLAYER* Player2)
       if(event.type == SDL_KEYDOWN) {
         switch(event.key.keysym.sym) {
           case SDLK_F1:
-            Player1->life = HUMAN;
-            Player2->life = HUMAN;
+            Player1->type = HUMAN;
+            Player2->type = HUMAN;
             return 1;
           case SDLK_F2:
-            Player1->life = HUMAN;
-            Player2->life = AI;
+            Player1->type = HUMAN;
+            Player2->type = AI;
             return 1;
           case SDLK_F3:
-            Player1->life = AI;
-            Player2->life = HUMAN;
+            Player1->type = AI;
+            Player2->type = HUMAN;
             
             return 1;
           case SDLK_F4:
-            Player1->life = AI;
-            Player2->life = AI;
+            Player1->type = AI;
+            Player2->type = AI;
             return 1;
           case SDLK_q:
           case SDLK_ESCAPE:
@@ -170,9 +171,9 @@ int waitEvent (SDL_Surface* screen) {
   return 0;
 }
 
-int get_move_player (SDL_Surface* screen, BOARD_SET S, int Player, char* row, char* col) {
+int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, char* row, char* col) {
   char buffer[200];
-  sprintf (buffer, "Waiting for Player %d (Human) to move", Player);
+  sprintf (buffer, "Waiting for Player %d (Human) to move", (int)P.num+1);
   msgStatusbar(screen, buffer, WHITE);
   SDL_Event event;
 
@@ -184,7 +185,7 @@ int get_move_player (SDL_Surface* screen, BOARD_SET S, int Player, char* row, ch
       if(event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT) {
         *col = (event.button.x - EXTRA_WIDTH/2) / SQUARE_SIZE;
         *row = (event.button.y) / SQUARE_SIZE;
-        if(get_square_set(S, *row, *col) == 0) {
+        if(get_square (b, *row, *col) == 0) {
           return 1;
         }
       }

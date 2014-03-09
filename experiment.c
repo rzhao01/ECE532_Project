@@ -12,5 +12,7 @@
 extern int CP5, CO4, CP4, CO3, CP3, CO2, CP2;
 
 int main() {
+	AI_PLAYER ai1 = default_ai();
+	print_ai(stdout, ai1);
     return 0;
 }

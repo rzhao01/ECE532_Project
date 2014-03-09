@@ -19,15 +19,15 @@ int main()
 
     // outer loop for menu options
     for (;;) {
-        BOARD_SET master_set;
+        BOARD master_board;
         AI_PLAYER ai = default_ai();
         PLAYER Player1, Player2;
-        Player1.num = 0;
-        Player2.num = 1;
+        Player1.num = P1;
+        Player2.num = P2;
 
         // set board to empty and draw grid
-        init_board_set(master_set);
-        drawBoardSet(screen, master_set);
+        init_board (master_board);
+        drawBoard(screen, master_board);
 
         // display main menu and let user choose game mode
         int status = mainMenu(screen, &Player1, &Player2);
@@ -52,23 +52,23 @@ int main()
             int status = 0;
 
             // depending on which turn it is let the appropriate player move
-            if (Curr_P.life == HUMAN)
-                status = get_move_player (screen, master_set, Curr_P.num, &row, &col);
+            if (Curr_P.type == HUMAN)
+                status = get_move_player (screen, master_board, Curr_P, &row, &col);
             else
-                status = get_move_ai1 (ai, master_set, Curr_P.num, Opp_P.num, &row, &col);
+                status = get_move_ai1 (ai, master_board, Curr_P, Opp_P, &row, &col);
    
             if (status == 0)
                 break;
 
-            set_square(master_set[Curr_P.num], row, col);
-            drawBoardSet(screen, master_set);
+            set_square(master_board, row, col, (int)Curr_P.num+1);
+            drawBoard(screen, master_board);
 
-            if (check_board_full(master_set)) {
+            if (check_board_full(master_board)) {
                 msgFull(screen);
                 waitEvent (screen);
                 break;
             }
-            else if (check_board_win(master_set, Curr_P, Opp_P)) {
+            else if (check_board_win(master_board, Curr_P)) {
                 msgWin(screen, Curr_P);
                 waitEvent (screen);
                 break;

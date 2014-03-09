@@ -32,21 +32,21 @@ long board_position_weight (int row, int col) {
 	return BOARD_ROWS/2 + NABS(row - BOARD_ROWS/2) + BOARD_COLS/2 + NABS(col - BOARD_COLS/2);
 }
 
-long board_count_score (AI_PLAYER ai, BOARD_SET S, int p, int o) {
+long board_count_score (AI_PLAYER ai, BOARD b, int p, int o) {
 	long score;
 
-	COUNTS horiz_p = count_horiz (S, p, o);
-	COUNTS vert_p = count_vert (S, p, o);
-	COUNTS ne_p = count_ne (S, p, o);
-	COUNTS se_p = count_se (S, p, o);
+	COUNTS horiz_p = count_horiz (b);
+	COUNTS vert_p = count_vert (b);
+	COUNTS ne_p = count_ne (b);
+	COUNTS se_p = count_se (b);
 
-	int p5 = horiz_p.p5 + vert_p.p5 + ne_p.p5 + se_p.p5;
-	int p4 = horiz_p.p4 + vert_p.p4 + ne_p.p4 + se_p.p4;
-	int p3 = horiz_p.p3 + vert_p.p3 + ne_p.p3 + se_p.p3;
-	int p2 = horiz_p.p2 + vert_p.p2 + ne_p.p2 + se_p.p2;
-	int o4 = horiz_p.o4 + vert_p.o4 + ne_p.o4 + se_p.o4;
-	int o3 = horiz_p.o3 + vert_p.o3 + ne_p.o3 + se_p.o3;
-	int o2 = horiz_p.o2 + vert_p.o2 + ne_p.o2 + se_p.o2;
+	int p5 = horiz_p.p5[p] + vert_p.p5[p] + ne_p.p5[p] + se_p.p5[p];
+	int p4 = horiz_p.p4[p] + vert_p.p4[p] + ne_p.p4[p] + se_p.p4[p];
+	int p3 = horiz_p.p3[p] + vert_p.p3[p] + ne_p.p3[p] + se_p.p3[p];
+	int p2 = horiz_p.p2[p] + vert_p.p2[p] + ne_p.p2[p] + se_p.p2[p];
+	int o4 = horiz_p.p4[o] + vert_p.p4[o] + ne_p.p4[o] + se_p.p4[o];
+	int o3 = horiz_p.p3[o] + vert_p.p3[o] + ne_p.p3[o] + se_p.p3[o];
+	int o2 = horiz_p.p2[o] + vert_p.p2[o] + ne_p.p2[o] + se_p.p2[o];
 
 	printf ("Board Evaluation:\n");
 	printf ("\tp5=%3d, o5=%3d\n\tp4=%3d, o4=%3d\n\tp3=%3d, o3=%3d\n\tp2=%3d, o2=%3d\n", 
@@ -56,8 +56,8 @@ long board_count_score (AI_PLAYER ai, BOARD_SET S, int p, int o) {
 	return score;
 }
 
-int get_move_ai1 (AI_PLAYER ai, BOARD_SET S, int p, int o, char *row, char *col) {
-	BOARD_SET ss;
+int get_move_ai1 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, char *row, char *col) {
+	BOARD bb;
 
 	int best_row=0, best_col=0;
 	long best_score = -1000000000;
@@ -65,13 +65,13 @@ int get_move_ai1 (AI_PLAYER ai, BOARD_SET S, int p, int o, char *row, char *col)
 	// maximize this number
 	for (int r = 0; r < BOARD_ROWS; ++r) {
 		for (int c = 0; c < BOARD_COLS; ++c) {
-			if (get_square_set(S, r, c))				// occupied
+			if (get_square (b, r, c))				// occupied
 				continue;
 
-			copy_board_set (ss, S);
-			set_square (ss[p], r, c);
+			copy_board (bb, b);
+			set_square (bb, r, c, (int)P.num+1);
 
-			long score = board_position_weight(r, c) + board_count_score(ai, ss, p, o);
+			long score = board_position_weight(r, c) + board_count_score(ai, bb, (int)P.num, (int)O.num);
 			
 			printf ("Score (%2d,%2d) -> %ld\n", r, c, score);
 
@@ -86,4 +86,9 @@ int get_move_ai1 (AI_PLAYER ai, BOARD_SET S, int p, int o, char *row, char *col)
 	*row = best_row;
 	*col = best_col;
 	return 1;
+}
+
+void print_ai (FILE* fp, AI_PLAYER ai) {
+	fprintf (fp, "C5: %15d, %15s\nC4: %15d, %15d\nC3: %15d, %15d\nC2: %15d, %15d\n", 
+		ai.CP5, "X", ai.CP4, ai.CO4, ai.CP3, ai.CO3, ai.CP2, ai.CO2);
 }

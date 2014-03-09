@@ -5,25 +5,30 @@
 
 #define BOARD_ROWS 11
 #define BOARD_COLS 11
-#define BOARD_ELEMS 4
-#define BITS_PER_ELEM 32
+#define BOARD_ELEMS 121
 
-typedef int ELEM;
+#define STONE_NONE 0
+#define STONE_P1 1
+#define STONE_P2 2
+
+#ifdef SYNTHESIS
+typedef int2 ELEM;
 typedef ELEM BOARD[BOARD_ELEMS];
-typedef BOARD BOARD_SET[2];
+#else
+typedef char ELEM;
+typedef ELEM BOARD[BOARD_ELEMS];
+#endif
 
-#define P1 0
-#define P2 1
-#define HUMAN 1
-#define AI 2
+typedef enum {HUMAN,AI} PLAYER_TYPE;
+typedef enum {P1,P2} PLAYER_NUMBER;
 
 typedef struct {
-	int p2, p3, p4, p5;
-	int o2, o3, o4, o5;
+	int p2[2], p3[2], p4[2], p5[2];
 } COUNTS;
 
 typedef struct {
-	int num, life;
+	PLAYER_NUMBER num;
+	PLAYER_TYPE type;
 } PLAYER;
 
 typedef struct {
