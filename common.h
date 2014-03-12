@@ -11,6 +11,10 @@
 #define STONE_P1 1
 #define STONE_P2 2
 
+#define MOVE_BREADTH 8
+#define MOVE_DEPTH 3
+#define NUM_NODES 8 + 8*8 + 8*8*8
+
 #ifdef SYNTHESIS
 typedef int2 ELEM;
 typedef ELEM BOARD[BOARD_ELEMS];
@@ -32,7 +36,7 @@ typedef struct {
 } PLAYER;
 
 typedef struct {
-    int CP5, CO4, CP4, CO3, CP3, CO2, CP2;
+    int CP4, CO3, CP3, CO2, CP2;
 } AI_PLAYER;
 
 #define SQUARE_SIZE  32

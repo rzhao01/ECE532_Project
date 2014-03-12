@@ -27,25 +27,32 @@ void zero_counts (COUNTS* C) {
 	C->p2[0] = C->p2[1] = C->p3[0] = C->p3[1] = 0;
 	C->p4[0] = C->p4[1] = C->p5[0] = C->p5[1] = 0;
 }
+void add_counts (COUNTS* C1, COUNTS* C2) {
+	C1->p2[0] += C2->p2[0]; C1->p3[0] += C2->p3[0]; 
+	C1->p4[0] += C2->p4[0]; C1->p5[0] += C2->p5[0];	
+	C1->p2[1] += C2->p2[1]; C1->p3[1] += C2->p3[1]; 
+	C1->p4[1] += C2->p4[1]; C1->p5[1] += C2->p5[1];	
+}
 
 // traverse the board using a horizontal window of 5 squares.
 // count the number of occurances of exactly n stones in the window,
 // with no opposing stones in the same window
-COUNTS count_horiz (BOARD b) {
+COUNTS count_horiz (ELEM b[BOARD_ELEMS]) {
 	COUNTS result;
 	zero_counts (&result);
+	
+	int row, col;
+	int m;
+	
+	for (row = 0; row < BOARD_ROWS; ++row) {
+		for (col = 0; col < BOARD_COLS-4; ++col) {
+			int p1_count = 0;
+			int p2_count = 0;
 
-	for (int row = 0; row < BOARD_ROWS; ++row) {
-		for (int col = 0; col < BOARD_COLS-4; ++col) {
-			unsigned p1_count = 0;
-			unsigned p2_count = 0;
-
-			for (int m = 0; m < 5; ++m) {
+			for (m = 0; m < 5; ++m) {
 				ELEM elem = get_square(b, row, col+m);
-				if (elem == STONE_P1)
-					p1_count++;
-				else if (elem == STONE_P2)
-					p2_count++;
+				p1_count += (elem == STONE_P1);
+				p2_count += (elem == STONE_P2);
 			}
 
 			if (p2_count == 0) {
@@ -64,20 +71,23 @@ COUNTS count_horiz (BOARD b) {
 	}
 	return result;
 }
-COUNTS count_vert (BOARD b) {
+
+COUNTS count_vert (ELEM b[BOARD_ELEMS]) {
 	COUNTS result;
 	zero_counts (&result);
-	for (int col = 0; col < BOARD_COLS; ++col) {
-		for (int row = 0; row < BOARD_ROWS-4; ++row) {
-			unsigned p1_count = 0;
-			unsigned p2_count = 0;
+	
+	int row, col;
+	int m;
 
-			for (int m = 0; m < 5; ++m) {
+	for (col = 0; col < BOARD_COLS; ++col) {
+		for (row = 0; row < BOARD_ROWS-4; ++row) {
+			int p1_count = 0;
+			int p2_count = 0;
+
+			for (m = 0; m < 5; ++m) {
 				ELEM elem = get_square(b, row+m, col);
-				if (elem == STONE_P1)
-					p1_count++;
-				else if (elem == STONE_P2)
-					p2_count++;
+				p1_count += (elem == STONE_P1);
+				p2_count += (elem == STONE_P2);
 			}
 
 			if (p2_count == 0) {
@@ -96,20 +106,22 @@ COUNTS count_vert (BOARD b) {
 	}
 	return result;
 }
-COUNTS count_ne (BOARD b) {
+COUNTS count_ne (ELEM b[BOARD_ELEMS]) {
 	COUNTS result;
 	zero_counts (&result);
-	for (int row = 4; row < BOARD_ROWS; ++row) {
-		for (int col = 0; col < BOARD_COLS-4; ++col) {
-			unsigned p1_count = 0;
-			unsigned p2_count = 0;
+	
+	int row, col;
+	int m;
+	
+	for (row = 4; row < BOARD_ROWS; ++row) {
+		for (col = 0; col < BOARD_COLS-4; ++col) {
+			int p1_count = 0;
+			int p2_count = 0;
 
-			for (int m = 0; m < 5; ++m) {
+			for (m = 0; m < 5; ++m) {
 				ELEM elem = get_square(b, row-m, col+m);
-				if (elem == STONE_P1)
-					p1_count++;
-				else if (elem == STONE_P2)
-					p2_count++;
+				p1_count += (elem == STONE_P1);
+				p2_count += (elem == STONE_P2);
 			}
 
 			if (p2_count == 0) {
@@ -128,20 +140,23 @@ COUNTS count_ne (BOARD b) {
 	}
 	return result;
 }
-COUNTS count_se (BOARD b) {
+COUNTS count_se (ELEM b[BOARD_ELEMS]) {
 	COUNTS result;
 	zero_counts (&result);
-	for (int row = 0; row < BOARD_ROWS-4; ++row) {
-		for (int col = 0; col < BOARD_COLS-4; ++col) {
-			unsigned p1_count = 0;
-			unsigned p2_count = 0;
 
-			for (int m = 0; m < 5; ++m) {
+	int row, col;
+	int m;
+	
+
+	for (row = 0; row < BOARD_ROWS-4; ++row) {
+		for (col = 0; col < BOARD_COLS-4; ++col) {
+			int p1_count = 0;
+			int p2_count = 0;
+
+			for (m = 0; m < 5; ++m) {
 				ELEM elem = get_square(b, row+m, col+m);
-				if (elem == STONE_P1)
-					p1_count++;
-				else if (elem == STONE_P2)
-					p2_count++;
+				p1_count += (elem == STONE_P1);
+				p2_count += (elem == STONE_P2);
 			}
 
 			if (p2_count == 0) {
@@ -158,22 +173,28 @@ COUNTS count_se (BOARD b) {
 			}
 		}
 	}
+	return result;
+}
+
+COUNTS generate_board_counts (ELEM b[BOARD_ELEMS]){
+	COUNTS result;
+	zero_counts (&result);
+	
+	COUNTS h = count_horiz (b);
+	add_counts (&result, &h);
+	COUNTS v = count_vert (b);
+	add_counts (&result, &v);
+	COUNTS ne = count_ne (b);
+	add_counts (&result, &ne);
+	COUNTS se = count_se (b);
+	add_counts (&result, &se);
+
 	return result;
 }
 
 int check_board_win (BOARD b, PLAYER P) {
-	COUNTS result;
-	result = count_horiz(b);
+	COUNTS result = generate_board_counts(b);
 	if (result.p5[(int)P.num] > 0)
-		return 1;
-	result = count_vert(b);
-	if (result.p5[(int)P.num] > 0)
-		return 1;
-	result = count_ne(b);
-	if (result.p5[(int)P.num] > 0)
-		return 1;
-	result = count_se(b);
-	if (result.p5[(int)P.num] > 0)
-		return 1;
+	    return 1;
 	return 0;
 }

@@ -6,18 +6,14 @@
 
 #define NABS(x) ((x) > 0 ? (-(x)) : (x))
 
-#define C_P5 1024*1024*1024
-#define C_O4 1024*1024*8
 #define C_P4 1024*8
-#define C_O3 1024*2
-#define C_P3 1024
+#define C_O3 1024*3
+#define C_P3 1024*3
 #define C_O2 8
 #define C_P2 8
 
 AI_PLAYER default_ai () {
     AI_PLAYER ai;
-    ai.CP5 = C_P5;
-    ai.CO4 = C_O4;
     ai.CP4 = C_P4;
     ai.CO3 = C_O3;
     ai.CP3 = C_P3;
@@ -52,8 +48,16 @@ long board_count_score (AI_PLAYER ai, BOARD b, int p, int o) {
 	printf ("\tp5=%3d, o5=%3d\n\tp4=%3d, o4=%3d\n\tp3=%3d, o3=%3d\n\tp2=%3d, o2=%3d\n", 
 			p5,0, p4,o4, p3,o3, p2,o2);
 
-	score = ai.CP5*p5 - ai.CO4*o4 + ai.CP4*p4 - ai.CO3*o3 + ai.CP3*p3 - ai.CO2*o2 + ai.CP2*p2;
-	return score;
+        
+        score = ai.CP4*p4 - ai.CO3*o3 + ai.CP3*p3 - ai.CO2*o2 + ai.CP2*p2;
+        if (p5 > 0)
+            score += 10e10;
+        else if (o4 > 0)
+            score += -10e9;
+        else if (p4 > 1)
+            score += 10e9;
+	
+        return score;
 }
 
 int get_move_ai1 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, char *row, char *col) {
@@ -89,6 +93,6 @@ int get_move_ai1 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, char *row, char *co
 }
 
 void print_ai (FILE* fp, AI_PLAYER ai) {
-	fprintf (fp, "C5: %15d, %15s\nC4: %15d, %15d\nC3: %15d, %15d\nC2: %15d, %15d\n", 
-		ai.CP5, "X", ai.CP4, ai.CO4, ai.CP3, ai.CO3, ai.CP2, ai.CO2);
+	fprintf (fp, "C4: %15d, %15s\nC3: %15d, %15d\nC2: %15d, %15d\n", 
+		ai.CP4, "X", ai.CP3, ai.CO3, ai.CP2, ai.CO2);
 }
