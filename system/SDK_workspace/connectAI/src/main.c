@@ -17,14 +17,17 @@
 #include "xintc.h" /* layer 1 interrupt controller device driver */
 #include "tft.h"
 #include "gameboard.h"
+#include "xuartlite.h"
 
 #define printf xil_printf
 
 void PrintTouchCoordinates(TouchSensor* InstPtr);
 void HandleGameboardTouch(TouchSensor* touchSensor, button_t * Button);
+void RecvUartCommand(XUartLite * InstPtr);
 void blackScreen();
 
 XIntc InterruptController;
+XUartLite Uart;
 TouchSensor touchSensor;
 ButtonManager_t Manager;
 gameboard_t Gameboard;
@@ -75,6 +78,17 @@ int main()
     Gameboard_Initialize(&Gameboard);
     Gameboard.TftPtr = &tft;
 
+    /********************** UART Setup *********************/
+
+    Status = XUartLite_Initialize(&Uart, XPAR_UARTLITE_1_DEVICE_ID);
+    if (Status != XST_SUCCESS)
+    {
+        printf("XUartLite initialization error\n\r");
+    }
+
+    XUartLite_SetRecvHandler(&Uart, (XUartLite_Handler) &RecvUartCommand, &Uart);
+
+
 
     /********************** Interrupt Controller Setup *********************/
        /*
@@ -86,6 +100,8 @@ int main()
        {
            printf("Interrupt controller initialization error\n\r");
        }
+
+
 
        /*
         * Connect the device driver handler that will be called when an interrupt
@@ -101,6 +117,16 @@ int main()
            printf("Interrupt controller connect error\n\r");
        }
 
+       Status = XIntc_Connect(&InterruptController,
+    		   XPAR_AXI_INTC_0_RS232_UART_1_INTERRUPT_INTR,
+                              (XInterruptHandler)XUartLite_InterruptHandler,
+                              &Uart);
+       if (Status != XST_SUCCESS)
+       {
+           printf("Interrupt controller connect to Uart error\n\r");
+       }
+
+
        Status = XIntc_Start(&InterruptController, XIN_REAL_MODE);
        if (Status != XST_SUCCESS)
        {
@@ -109,7 +135,14 @@ int main()
 
        XIntc_Enable(&InterruptController,
     		   XPAR_AXI_INTC_0_TOUCHSENSOR_0_INTERRUPT_INTR);
+       XIntc_Enable(&InterruptController,
+    		   XPAR_AXI_INTC_0_RS232_UART_1_INTERRUPT_INTR);
        microblaze_enable_interrupts();
+       XUartLite_ResetFifos(&Uart);
+       //Gameboard.WhiteMode = uart;
+       //XUartLite_EnableInterrupt(&Uart);
+
+
 
 	while (1) {
 
@@ -127,6 +160,10 @@ int main()
 				break;
 			case uart:
 				TouchSensorButtons_DisableButton(&GameboardGridButton);
+				if(Gameboard.MoveBufferSize > 0){
+					SendUartMove(&Uart, Gameboard.MoveBuffer[Gameboard.MoveBufferSize-1].X,
+										Gameboard.MoveBuffer[Gameboard.MoveBufferSize-1].Y);
+				}
 
 				break;
 			default:
@@ -141,8 +178,8 @@ int main()
 }
 //Default handler for touches
 void PrintTouchCoordinates(TouchSensor* InstPtr){
-	printf("Default Handler\n\r");
-	printf("X, Y: %d, %d\n\r", InstPtr->LastTouch.x, InstPtr->LastTouch.y);
+	//printf("Default Handler\n\r");
+	//printf("X, Y: %d, %d\n\r", InstPtr->LastTouch.x, InstPtr->LastTouch.y);
 }
 
 
@@ -155,6 +192,30 @@ void HandleGameboardTouch(TouchSensor* touchSensor, button_t * Button){
 		printf("Error: Could not look up valid grid square from touch coordinates");
 	}
 
+}
+
+void RecvUartCommand(XUartLite * InstPtr){
+
+	u8 dataBuffer[3];
+	XUartLite_Recv(InstPtr,&dataBuffer,3);
+	if ((char)dataBuffer[0] == '0'){
+		//TODO: ResetBoard
+	} else if ((dataBuffer[0] >= 'A' && dataBuffer[0] <= ('A' + BOARD_SIZE)) &&
+				dataBuffer[2] >= 'A' && dataBuffer[2] <= ('A' + BOARD_SIZE)) {
+		Gameboard_PlayMove(&Gameboard,dataBuffer[0] - 'A' , dataBuffer[2] - 'A');
+	} else {
+		printf("Invalid UART command: %c%c%c\n\r", dataBuffer[0],dataBuffer[1],dataBuffer[2]);
+	}
+
+}
+
+void SendUartMove(XUartLite * InstPtr, u32 X, u32 Y){
+	u8 dataBuffer[4];
+	dataBuffer[0] = X + 'A';
+	dataBuffer[1] = ',';
+	dataBuffer[2] = Y + 'A';
+	dataBuffer[3] = '\n';
+	printf("%c%c%c\n\r", dataBuffer[0],dataBuffer[1],dataBuffer[2]);
 }
 //Inialize the screen to red
 void blackScreen() {

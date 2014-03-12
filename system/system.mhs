@@ -211,6 +211,7 @@ BEGIN axi_uartlite
  PORT S_AXI_ACLK = clk_100_0000MHzPLL0
  PORT TX = RS232_Uart_1_sout
  PORT RX = RS232_Uart_1_sin
+ PORT Interrupt = RS232_Uart_1_Interrupt
 END
 
 BEGIN axi_gpio
@@ -335,6 +336,6 @@ BEGIN axi_intc
  BUS_INTERFACE S_AXI = axi4lite_0
  BUS_INTERFACE INTERRUPT = axi_intc_0_INTERRUPT
  PORT S_AXI_ACLK = clk_100_0000MHzPLL0
- PORT Intr = touchsensor_0_Interrupt
+ PORT Intr = touchsensor_0_Interrupt & RS232_Uart_1_Interrupt
 END
 
