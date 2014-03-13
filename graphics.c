@@ -171,7 +171,7 @@ int waitEvent (SDL_Surface* screen) {
   return 0;
 }
 
-int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, char* row, char* col) {
+int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, COORD* move) {
   char buffer[200];
   sprintf (buffer, "Waiting for Player %d (Human) to move", (int)P.num+1);
   msgStatusbar(screen, buffer, WHITE);
@@ -183,9 +183,9 @@ int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, char* row, char* co
         return 0;
       }
       if(event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT) {
-        *col = (event.button.x - EXTRA_WIDTH/2) / SQUARE_SIZE;
-        *row = (event.button.y) / SQUARE_SIZE;
-        if(get_square (b, *row, *col) == 0) {
+        move->col = (event.button.x - EXTRA_WIDTH/2) / SQUARE_SIZE;
+        move->row = (event.button.y) / SQUARE_SIZE;
+        if(get_square (b, move->row, move->col) == 0) {
           return 1;
         }
       }

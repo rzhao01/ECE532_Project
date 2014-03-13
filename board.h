@@ -11,12 +11,10 @@ void assert_dims ();
 void init_board (BOARD b);
 void copy_board (BOARD to, BOARD from);
 
-inline
-ELEM get_square (BOARD b, int row, int col) {
+inline ELEM get_square (BOARD b, int row, int col) {
     return b[row*BOARD_COLS + col];
 }
-inline
-void set_square (BOARD b, int row, int col, ELEM val) {
+inline void set_square (BOARD b, int row, int col, ELEM val) {
     b[row*BOARD_COLS + col] = val;
 }
 
@@ -24,6 +22,8 @@ COUNTS count_horiz (BOARD b);
 COUNTS count_vert (BOARD b);
 COUNTS count_ne (BOARD b);
 COUNTS count_se (BOARD b);
+
+COUNTS generate_board_counts (ELEM b[BOARD_ELEMS]);
 
 int check_board_full (BOARD b);
 int check_board_win (BOARD b, PLAYER P);

@@ -22,6 +22,6 @@ int mainMenu (SDL_Surface* screen, PLAYER* Player1, PLAYER* Player2);
 
 int waitEvent (SDL_Surface* screen);
 
-int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, char* row, char* col);
+int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, COORD* move);
 
 #endif

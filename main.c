@@ -22,8 +22,8 @@ int main()
         BOARD master_board;
         AI_PLAYER ai = default_ai();
         PLAYER Player1, Player2;
-        Player1.num = P1;
-        Player2.num = P2;
+        Player1.num = P1; Player1.stone = STONE_P1;
+        Player2.num = P2; Player2.stone = STONE_P2;
 
         // set board to empty and draw grid
         init_board (master_board);
@@ -48,19 +48,19 @@ int main()
                 Opp_P = Player1;   
             }
 
-            char row, col;
+            COORD move;
             int status = 0;
 
             // depending on which turn it is let the appropriate player move
             if (Curr_P.type == HUMAN)
-                status = get_move_player (screen, master_board, Curr_P, &row, &col);
+                status = get_move_player (screen, master_board, Curr_P, &move);
             else
-                status = get_move_ai1 (ai, master_board, Curr_P, Opp_P, &row, &col);
+                status = get_move_ai2 (ai, master_board, Curr_P, Opp_P, &move);
    
             if (status == 0)
                 break;
 
-            set_square(master_board, row, col, (int)Curr_P.num+1);
+            set_square(master_board, move.row, move.col, (int)Curr_P.num+1);
             drawBoard(screen, master_board);
 
             if (check_board_full(master_board)) {
