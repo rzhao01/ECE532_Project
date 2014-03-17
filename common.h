@@ -12,8 +12,8 @@
 #define STONE_P2 2
 
 #define MOVE_BREADTH 8
-#define MOVE_DEPTH 4
-#define NUM_NODES 8 + 8*8 + 8*8*8 + 8*8*8*8
+#define MOVE_DEPTH 2
+#define NUM_NODES MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH*MOVE_BREADTH
 
 #ifdef SYNTHESIS
 typedef int2 ELEM;
@@ -37,7 +37,7 @@ typedef struct {
 typedef struct {
 	PLAYER_NUMBER num;
 	PLAYER_TYPE type;
-        ELEM stone;
+    ELEM stone;
 } PLAYER;
 
 typedef struct {
