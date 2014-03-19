@@ -195,12 +195,12 @@ int Button_CheckRect(button_t * Button, u16 X, u16 Y)
 int Button_CheckGrid(button_t * Button, u16 X, u16 Y)
 {
 	Xil_AssertNonvoid(Button);
-	if ((X >= (Button->PosX+(Button->DimA)*(Button->GridSize)))  ||
+	if ((X >= (Button->PosX+(Button->DimA)*(Button->GridSizeX)))  ||
 		 (X < (Button->PosX))) {
 		return 0;
 	}
 
-	if ((Y >= (Button->PosY+(Button->DimB)*(Button->GridSize))) ||
+	if ((Y >= (Button->PosY+(Button->DimB)*(Button->GridSizeY))) ||
 		 (Y < (Button->PosY))) {
 		return 0;
 	}
@@ -233,7 +233,7 @@ int Button_GetGridLoc(button_t * Button, u16 TouchX, u16 TouchY, u16 * GridX, u1
 	u16 TempX = (TouchX - Button->PosX)/(Button->DimA);
 	u16 TempY = (TouchY - Button->PosY)/(Button->DimB);
 
-	if (TempX < Button->GridSize || TempY < Button->GridSize){
+	if (TempX < Button->GridSizeX || TempY < Button->GridSizeY){
 		*GridX = TempX;
 		*GridY = TempY;
 		return 1;
@@ -389,7 +389,7 @@ void Button_SetRectDim(button_t * Button, u16 LenX, u16 LenY, u16 X, u16 Y)
 *
 *
 ******************************************************************************/
-void Button_SetGridDim(button_t * Button, u16 LenX, u16 LenY, u16 X, u16 Y, u16 GridSize)
+void Button_SetGridDim(button_t * Button, u16 LenX, u16 LenY, u16 X, u16 Y, u16 GridSizeX, u16 GridSizeY)
 {
 	Xil_AssertVoid(Button);
 	Button->shape = GRID;
@@ -397,7 +397,8 @@ void Button_SetGridDim(button_t * Button, u16 LenX, u16 LenY, u16 X, u16 Y, u16 
 	Button->PosY = Y;
 	Button->DimA = LenX;
 	Button->DimB = LenY;
-	Button->GridSize = GridSize;
+	Button->GridSizeX = GridSizeX;
+	Button->GridSizeY = GridSizeY;
 
 }
 
@@ -573,17 +574,21 @@ void Button_RenderRect(button_t * Button, u16 colour, TFT *TftPtr){
 ******************************************************************************/
 void Button_RenderGrid(button_t * Button, u16 colour, TFT *TftPtr){
 	int i, j;
-	int GridSize = Button->GridSize;
+	int GridSizeX = Button->GridSizeX;
+	int GridSizeY = Button->GridSizeY;
 	int BottomX = Button->PosX;
-	int TopX = BottomX + (Button->DimA)*GridSize;
+	int TopX = BottomX + (Button->DimA)*GridSizeX;
 	int BottomY = Button->PosY;
-	int TopY = BottomY + (Button->DimB)*GridSize;
+	int TopY = BottomY + (Button->DimB)*GridSizeY;
 
 
-	for (j = 0; j <= GridSize; j++) {
+	for (j = 0; j <= GridSizeY; j++) {
 		for (i = BottomX; i <= TopX; i++) {
 					TFT_WriteToPixel(i, BottomY + j*Button->DimB, colour, TFT_GetImageAddress(TftPtr));
 		}
+	}
+
+	for (j = 0; j <= GridSizeX; j++) {
 		for (i = BottomY; i <= TopY; i++) {
 				TFT_WriteToPixel(BottomX + j*Button->DimA, i, colour, TFT_GetImageAddress(TftPtr));
 		}

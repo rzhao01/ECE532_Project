@@ -52,8 +52,8 @@
 double sin_lookup(double i);
 double cos_lookup(double i);
 void render_line(double x1, double y1, double x2, double y2, u16 colour, TFT *TftPtr);
-void draw_line(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr);
-
+void draw_line_x(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr);
+void draw_line_y(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr);
 
 //Render a hollow circle
 void Graphics_RenderCircle(u16 X, u16 Y, u16 Radius, u16 colour, TFT *TftPtr);

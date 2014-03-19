@@ -14,6 +14,10 @@
 #include "xil_types.h"
 #include "xil_assert.h"
 #include "graphics.h"
+#include "common.h"
+#include "board.h"
+#include "ai.h"
+
 
 /************************** Constant Definitions *****************************/
 
@@ -39,11 +43,12 @@ typedef enum player_mode_t {
 
 
 typedef struct gameboard_t {
-	u32 BlackPositions [BOARD_SIZE];
-	u32 WhitePositions [BOARD_SIZE];
+	//u32 BlackPositions [BOARD_SIZE];
+	//u32 WhitePositions [BOARD_SIZE];
+	BOARD master_board;
 
-	move_t MoveBuffer[BOARD_SIZE*BOARD_SIZE];
-	volatile u16 MoveBufferSize;
+	move_t MoveBuffer[BOARD_ROWS*BOARD_COLS];
+	volatile short MoveBufferSize;
 
 	player_mode_t WhiteMode, BlackMode;
 
@@ -63,14 +68,15 @@ typedef enum square_state_t {
 
 /************************** Function Prototypes ******************************/
 
-void Gameboard_Initialize(gameboard_t * Gameboard);
+void Gameboard_Initialize(gameboard_t * Gameboard, player_mode_t blackMode, player_mode_t whiteMode);
 
-void Gameboard_SetSquare(gameboard_t * Gameboard, u32 X, u32 Y, square_state_t State);
-square_state_t Gameboard_GetSquare(gameboard_t * Gameboard, u32 X, u32 Y);
-void Gameboard_PlayMove(gameboard_t * Gameboard, u32 X, u32 Y);
+//void Gameboard_SetSquare(gameboard_t * Gameboard, u32 X, u32 Y, square_state_t State);
+//square_state_t Gameboard_GetSquare(gameboard_t * Gameboard, u32 X, u32 Y);
+void Gameboard_PlayMove(gameboard_t * Gameboard, u32 X, u32 Y, PLAYER_NUMBER P);
 
 void Gameboard_RenderSquare(gameboard_t * Gameboard, u32 X, u32 Y);
-void Gameboard_RenderBlankBoard();
+//Re-renders the whole board based on current game state.
+void Gameboard_RenderBoard(gameboard_t  * Gameboard);
 
 
 

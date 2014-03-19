@@ -1,4 +1,4 @@
-/*
+	/*
  * gameboard.c
  *
  *  Created on: Feb 25, 2014
@@ -19,19 +19,17 @@
 *****************************************************************************/
 
 
-void Gameboard_Initialize(gameboard_t * Gameboard) {
+void Gameboard_Initialize(gameboard_t * Gameboard, player_mode_t blackMode, player_mode_t whiteMode) {
 
 	Xil_AssertVoid(Gameboard!=NULL);
 	int i;
-	for (i = 0; i < BOARD_SIZE; i++){
-		Gameboard->BlackPositions[i] = 0;
-		Gameboard->WhitePositions[i] = 0;
+	for (i = 0; i < BOARD_ELEMS; i++){
+		Gameboard->master_board[i] = STONE_NONE;
 	}
-	Gameboard->MoveBufferSize = 0;
+	Gameboard->MoveBufferSize = -1;
 
-	Gameboard->BlackMode=human;
-	Gameboard->WhiteMode=human;
-
+	Gameboard->BlackMode=blackMode;
+	Gameboard->WhiteMode=whiteMode;
 }
 
 /*****************************************************************************/
@@ -45,6 +43,7 @@ void Gameboard_Initialize(gameboard_t * Gameboard) {
 * @param    State, the state teh square should be set to.
 *
 *****************************************************************************/
+/*
 void Gameboard_SetSquare(gameboard_t * Gameboard, u32 X, u32 Y, square_state_t State)
 {
 	Xil_AssertVoid(Gameboard != NULL);
@@ -68,7 +67,7 @@ void Gameboard_SetSquare(gameboard_t * Gameboard, u32 X, u32 Y, square_state_t S
 			break;
 		}
 }
-
+*/
 /*****************************************************************************/
 /*
 *	Returns the state enum of the queried square
@@ -79,6 +78,7 @@ void Gameboard_SetSquare(gameboard_t * Gameboard, u32 X, u32 Y, square_state_t S
 *
 * @returns   the state of the square (WHITE, BLACK, UNPLAYED)
 *****************************************************************************/
+/*
 square_state_t Gameboard_GetSquare(gameboard_t * Gameboard, u32 X, u32 Y)
 {
 	Xil_AssertNonvoid(Gameboard != NULL);
@@ -96,7 +96,7 @@ square_state_t Gameboard_GetSquare(gameboard_t * Gameboard, u32 X, u32 Y)
 	else
 		return unplayed;
 }
-
+*/
 /*****************************************************************************/
 /*
 *	Renders a square based on its current state.
@@ -110,14 +110,14 @@ void Gameboard_RenderSquare(gameboard_t * Gameboard, u32 X, u32 Y)
 	Xil_AssertVoid(X < BOARD_SIZE);
 	Xil_AssertVoid(Y < BOARD_SIZE);
 
-	square_state_t square_state = Gameboard_GetSquare(Gameboard,X,Y);
+	ELEM square_state = get_square(Gameboard->master_board,(int)Y,(int)X);
 
 	u16 CentreX = (X * SQUARE_DIM) + SQUARE_DIM/2 + BOARD_OFFSET_X;
 	u16 CentreY = (Y * SQUARE_DIM) + SQUARE_DIM/2 + BOARD_OFFSET_Y;
 
-	if (square_state == white)
+	if (square_state == STONE_P1)
 		Graphics_RenderCircle(CentreX,CentreY,PIECE_RADIUS,WHITE,Gameboard->TftPtr);
-	else if(square_state == black)
+	else if(square_state == STONE_P2)
 		Graphics_RenderCircle(CentreX,CentreY,PIECE_RADIUS,RED,Gameboard->TftPtr);
 	else
 		Graphics_RenderCircle(CentreX,CentreY,PIECE_RADIUS,BLACK,Gameboard->TftPtr);
@@ -125,17 +125,29 @@ void Gameboard_RenderSquare(gameboard_t * Gameboard, u32 X, u32 Y)
 
 }
 
-void Gameboard_PlayMove(gameboard_t * Gameboard, u32 X, u32 Y) {
+void Gameboard_RenderBoard(gameboard_t * Gameboard){
+
+	Xil_AssertVoid(Gameboard != NULL);
+		Xil_AssertVoid(Gameboard->TftPtr != NULL);
+	int x, y;
+	for (x = 0; x < BOARD_SIZE; x++){
+		for (y=0; y < BOARD_SIZE; y++) {
+			Gameboard_RenderSquare(Gameboard, x, y);
+		}
+	}
+}
+
+void Gameboard_PlayMove(gameboard_t * Gameboard, u32 X, u32 Y, PLAYER_NUMBER P) {
 
 	Xil_AssertVoid(Gameboard != NULL);
 
-	if (Gameboard_GetSquare(Gameboard,X,Y) != unplayed)
+	if (get_square(Gameboard->master_board, (int)Y, (int)X))
 		return;
 
 	int MoveNumber = Gameboard->MoveBufferSize;
-	square_state_t NewPlay = (MoveNumber % 2 == 0) ? black : white;
-	xil_printf("Legal move to %d,%d for %s\n\r", X, Y, (NewPlay == black) ? "black" : "white");
-	Gameboard_SetSquare(Gameboard, X, Y, NewPlay);
+	ELEM NewPlay = (MoveNumber % 2 == 0) ? STONE_P2 : STONE_P1;
+	//xil_printf("Legal move to %d,%d for %s\n\r", X, Y, (NewPlay == STONE_P2) ? "black" : "white");
+	set_square(Gameboard->master_board, (int)Y, (int)X, (int)P+1);
 	Gameboard->MoveBuffer[MoveNumber].X = X;
 	Gameboard->MoveBuffer[MoveNumber].Y = Y;
 	Gameboard->MoveBufferSize = (MoveNumber + 1);
@@ -144,6 +156,7 @@ void Gameboard_PlayMove(gameboard_t * Gameboard, u32 X, u32 Y) {
 		Gameboard_RenderSquare(Gameboard, X, Y);
 
 }
+
 
 
 

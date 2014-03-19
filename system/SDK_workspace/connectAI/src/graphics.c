@@ -65,20 +65,38 @@ double cos_lookup(double i){
 ******************************************************************************/
 void render_line(double x1, double y1, double x2, double y2, u16 colour, TFT *TftPtr){
 	double m = (y2-y1)/(x2-x1);
-	if (x1>x2){
-		draw_line(x2,y2,x1,y1,m,colour, TftPtr);
-		return;
+	if (m > 1) {
+		if (y1>y2){
+			draw_line_y(x2,y2,x1,y1,m,colour, TftPtr);
+			return;
+		}
+		draw_line_y(x1,y1,x2,y2,m,colour, TftPtr);
 	}
-	draw_line(x1,y1,x2,y2,m,colour, TftPtr);
+	else {
+		if (x1>x2){
+			draw_line_x(x2,y2,x1,y1,m,colour, TftPtr);
+			return;
+		}
+		draw_line_x(x1,y1,x2,y2,m,colour, TftPtr);
+	}
 }
-
-void draw_line(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr){
+void draw_line_x(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr){
 	double i = x1;
 	double j = y1;
 	while(i<=x2 ){
 		TFT_WriteToPixel((int)i, (int)j, colour, TFT_GetImageAddress(TftPtr));
 		i++;
 		j = j+m;
+	}
+}
+
+void draw_line_y(double x1, double y1, double x2, double y2, double m, u16 colour, TFT *TftPtr){
+	double i = x1;
+	double j = y1;
+	while(j<=y2 ){
+		TFT_WriteToPixel((int)i, (int)j, colour, TFT_GetImageAddress(TftPtr));
+		j++;
+		i = i+(1/m);
 	}
 }
 

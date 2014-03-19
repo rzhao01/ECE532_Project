@@ -18,12 +18,19 @@
 #include "tft.h"
 #include "gameboard.h"
 #include "xuartlite.h"
+#include "board.h"
 
 #define printf xil_printf
 
 void PrintTouchCoordinates(TouchSensor* InstPtr);
 void HandleGameboardTouch(TouchSensor* touchSensor, button_t * Button);
+void HandleResetTouch(TouchSensor* touchSensor, button_t * Button);
+void HandleWhiteModeTouch(TouchSensor* touchSensor, button_t * Button);
+void HandleBlackModeTouch(TouchSensor* touchSensor, button_t * Button);
+
 void RecvUartCommand(XUartLite * InstPtr);
+//void SendUartCommand(XUartLite * InstPtr);
+void HandleAiMove(AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O);
 void blackScreen();
 
 XIntc InterruptController;
@@ -41,15 +48,34 @@ int main()
 	Status = TouchSensor_Initialize(&touchSensor, XPAR_TOUCHSENSOR_0_DEVICE_ID);
 	if (Status != XST_SUCCESS)
 	{
-		printf("TouchSensor initialisation error\n\r\r");
+	//	printf("TouchSensor initialisation error\n\r\r");
 	}
     TouchSensorButtons_InitializeManager(&Manager, &touchSensor, &PrintTouchCoordinates);
 
     button_t GameboardGridButton;
-    Button_SetGridDim(&GameboardGridButton, SQUARE_DIM, SQUARE_DIM, BOARD_OFFSET_X, BOARD_OFFSET_Y, BOARD_SIZE);
+    Button_SetGridDim(&GameboardGridButton, SQUARE_DIM, SQUARE_DIM, BOARD_OFFSET_X, BOARD_OFFSET_Y, BOARD_SIZE, BOARD_SIZE);
     Button_AssignHandler(&GameboardGridButton, &HandleGameboardTouch);
     TouchSensorButtons_RegisterButton(&Manager, &GameboardGridButton);
     TouchSensorButtons_EnableButton(&GameboardGridButton);
+
+    button_t WhiteModeButton;
+    Button_SetGridDim(&WhiteModeButton, 50, 50, 300, 10 , 3, 1);
+    Button_AssignHandler(&WhiteModeButton, &HandleWhiteModeTouch);
+    TouchSensorButtons_RegisterButton(&Manager, &WhiteModeButton);
+    TouchSensorButtons_EnableButton(&WhiteModeButton);
+
+    button_t BlackModeButton;
+    Button_SetGridDim(&BlackModeButton, 50, 50, 300, 75, 3, 1);
+    Button_AssignHandler(&BlackModeButton, &HandleBlackModeTouch);
+    TouchSensorButtons_RegisterButton(&Manager, &BlackModeButton);
+    TouchSensorButtons_EnableButton(&BlackModeButton);
+
+    button_t ResetButton;
+    Button_SetRectDim(&ResetButton, 100, 50, 325, 200);
+    Button_AssignHandler(&ResetButton, &HandleResetTouch);
+    TouchSensorButtons_RegisterButton(&Manager, &ResetButton);
+    TouchSensorButtons_EnableButton(&ResetButton);
+
 
     //Example of how to disable button below. See header
     //file for details
@@ -73,9 +99,14 @@ int main()
 	//TouchSensorButtons_RenderButton(&MyCircle, GREEN, &tft);
 	//TouchSensorButtons_RenderButton(&MyRect, RED, &tft);
 	TouchSensorButtons_RenderButton(&GameboardGridButton, BLUE, &tft);
+	TouchSensorButtons_RenderButton(&ResetButton, ORANGE, &tft);
+	TouchSensorButtons_RenderButton(&WhiteModeButton, WHITE, &tft);
+	TouchSensorButtons_RenderButton(&BlackModeButton, RED, &tft);
 
 
-    Gameboard_Initialize(&Gameboard);
+
+
+    Gameboard_Initialize(&Gameboard, human, uart);
     Gameboard.TftPtr = &tft;
 
     /********************** UART Setup *********************/
@@ -90,89 +121,106 @@ int main()
 
 
 
-    /********************** Interrupt Controller Setup *********************/
-       /*
-        * Initialize the interrupt controller driver so that it's ready to use,
-        * using the device ID that is generated in xparameters.h
-        */
-       Status = XIntc_Initialize(&InterruptController, XPAR_AXI_INTC_0_DEVICE_ID);
-       if (Status != XST_SUCCESS)
-       {
-           printf("Interrupt controller initialization error\n\r");
-       }
+/********************** Interrupt Controller Setup *********************/
+   /*
+	* Initialize the interrupt controller driver so that it's ready to use,
+	* using the device ID that is generated in xparameters.h
+	*/
+   Status = XIntc_Initialize(&InterruptController, XPAR_AXI_INTC_0_DEVICE_ID);
+   if (Status != XST_SUCCESS)
+   {
+	   //printf("Interrupt controller initialization error\n\r");
+   }
+
+   /*
+	* Connect the device driver handler that will be called when an interrupt
+	* for the device occurs, the device driver handler performs the specific
+	* interrupt processing for the device
+	*/
+   Status = XIntc_Connect(&InterruptController,
+		   XPAR_AXI_INTC_0_TOUCHSENSOR_0_INTERRUPT_INTR,
+						  (XInterruptHandler)TouchSensorButtons_InterruptHandler,
+						  &Manager);
+   if (Status != XST_SUCCESS)
+   {
+	   //printf("Interrupt controller connect error\n\r");
+   }
+
+   Status = XIntc_Connect(&InterruptController,
+		   XPAR_AXI_INTC_0_RS232_UART_1_INTERRUPT_INTR,
+						  (XInterruptHandler)XUartLite_InterruptHandler,
+						  &Uart);
+   if (Status != XST_SUCCESS)
+   {
+	   printf("Interrupt controller connect to Uart error\n\r");
+   }
 
 
+   Status = XIntc_Start(&InterruptController, XIN_REAL_MODE);
+   if (Status != XST_SUCCESS)
+   {
+	   //printf("Interrupt controller start error\n\r");
+   }
 
-       /*
-        * Connect the device driver handler that will be called when an interrupt
-        * for the device occurs, the device driver handler performs the specific
-        * interrupt processing for the device
-        */
-       Status = XIntc_Connect(&InterruptController,
-    		   XPAR_AXI_INTC_0_TOUCHSENSOR_0_INTERRUPT_INTR,
-                              (XInterruptHandler)TouchSensorButtons_InterruptHandler,
-                              &Manager);
-       if (Status != XST_SUCCESS)
-       {
-           printf("Interrupt controller connect error\n\r");
-       }
+   XIntc_Enable(&InterruptController,
+		   XPAR_AXI_INTC_0_TOUCHSENSOR_0_INTERRUPT_INTR);
+   XIntc_Enable(&InterruptController,
+		   XPAR_AXI_INTC_0_RS232_UART_1_INTERRUPT_INTR);
+   microblaze_enable_interrupts();
+   XUartLite_ResetFifos(&Uart);
+   XUartLite_EnableInterrupt(&Uart);
 
-       Status = XIntc_Connect(&InterruptController,
-    		   XPAR_AXI_INTC_0_RS232_UART_1_INTERRUPT_INTR,
-                              (XInterruptHandler)XUartLite_InterruptHandler,
-                              &Uart);
-       if (Status != XST_SUCCESS)
-       {
-           printf("Interrupt controller connect to Uart error\n\r");
-       }
+   AI_PLAYER ai = default_ai();
+   PLAYER Player1, Player2;
+   Player1.num = P1;
+   Player2.num = P2;
+   Gameboard_Initialize(&Gameboard,human,uart);
 
+   while (1) {
+		PLAYER Curr_P, Opp_P;
 
-       Status = XIntc_Start(&InterruptController, XIN_REAL_MODE);
-       if (Status != XST_SUCCESS)
-       {
-           printf("Interrupt controller start error\n\r");
-       }
-
-       XIntc_Enable(&InterruptController,
-    		   XPAR_AXI_INTC_0_TOUCHSENSOR_0_INTERRUPT_INTR);
-       XIntc_Enable(&InterruptController,
-    		   XPAR_AXI_INTC_0_RS232_UART_1_INTERRUPT_INTR);
-       microblaze_enable_interrupts();
-       XUartLite_ResetFifos(&Uart);
-       //Gameboard.WhiteMode = uart;
-       //XUartLite_EnableInterrupt(&Uart);
-
-
-
-	while (1) {
+		//Workaround to enable multiple resets on turn 0.
+		if (Gameboard.MoveBufferSize == -1)
+			Gameboard.MoveBufferSize++;
 
 		int CurrentMove = Gameboard.MoveBufferSize;
 		player_mode_t CurrentPlayerMode = (CurrentMove % 2) ? Gameboard.WhiteMode : Gameboard.BlackMode;
-
+		Curr_P = (CurrentMove % 2) ? Player1 : Player2;
+		Opp_P = (CurrentMove % 2) ? Player2 : Player1;
 		switch (CurrentPlayerMode){
 			case human:
-			    TouchSensorButtons_EnableButton(&GameboardGridButton);
-
+				TouchSensorButtons_EnableButton(&GameboardGridButton);
 				break;
 			case fpga:
 				TouchSensorButtons_DisableButton(&GameboardGridButton);
-
+				HandleAiMove(ai, Gameboard.master_board, Curr_P, Opp_P);
 				break;
 			case uart:
 				TouchSensorButtons_DisableButton(&GameboardGridButton);
 				if(Gameboard.MoveBufferSize > 0){
-					SendUartMove(&Uart, Gameboard.MoveBuffer[Gameboard.MoveBufferSize-1].X,
+					SendUartCommand(&Uart, Gameboard.MoveBuffer[Gameboard.MoveBufferSize-1].X,
 										Gameboard.MoveBuffer[Gameboard.MoveBufferSize-1].Y);
 				}
-
 				break;
 			default:
 				TouchSensorButtons_EnableButton(&GameboardGridButton);
 				break;
-			}
+		}
+		/*
+		if (check_board_full(Gameboard.master_board)) {
+			//printf("Gameboard full\n\r");
+			break;
+		}
+		*/
+		if (check_board_win(Gameboard.master_board, Curr_P)) {
+			xil_printf("Player %s won\n\r", (Curr_P.num == P1) ? "white" : "black");
+			//Spin waiting on reset
+			while(Gameboard.MoveBufferSize != -1);
+		}
 
 		while(CurrentMove == Gameboard.MoveBufferSize);
-	}
+
+   }
 
 	return 0;
 }
@@ -180,36 +228,131 @@ int main()
 void PrintTouchCoordinates(TouchSensor* InstPtr){
 	//printf("Default Handler\n\r");
 	//printf("X, Y: %d, %d\n\r", InstPtr->LastTouch.x, InstPtr->LastTouch.y);
+
 }
 
+void HandleAiMove(AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O){
+	//TODO: Fix row/col order
+	char GridX,GridY;
+	get_move_ai1 (ai, b, P, O, &GridY, &GridX);
+	Gameboard_PlayMove(&Gameboard,(u32)GridX,(u32)GridY,P.num);
+}
 
 void HandleGameboardTouch(TouchSensor* touchSensor, button_t * Button){
+	int CurrentMove = Gameboard.MoveBufferSize;
+	PLAYER_NUMBER P = (CurrentMove % 2) ? P1 : P2;
 	u16 GridX, GridY;
 	if (Button_GetGridLoc(Button, touchSensor->LastTouch.x, touchSensor->LastTouch.y,
 			&GridX, &GridY)) {
-			Gameboard_PlayMove(&Gameboard,GridX,GridY);
+			Gameboard_PlayMove(&Gameboard,GridX,GridY,P);
 	} else {
-		printf("Error: Could not look up valid grid square from touch coordinates");
+		//printf("Error: Could not look up valid grid square from touch coordinates");
 	}
 
+}
+
+void HandleResetTouch(TouchSensor* touchSensor, button_t * Button){
+	xil_printf("Touchsensor Reset \n\r");
+	Gameboard_Initialize(&Gameboard, Gameboard.BlackMode, Gameboard.WhiteMode);
+	Gameboard_RenderBoard(&Gameboard);
+}
+
+void HandleWhiteModeTouch(TouchSensor* touchSensor, button_t * Button){
+
+	u16 GridX, GridY;
+	if (Button_GetGridLoc(Button, touchSensor->LastTouch.x, touchSensor->LastTouch.y,
+				&GridX, &GridY)){
+		player_mode_t newMode;
+		switch (GridX){
+		case 0:
+			newMode = human;
+			xil_printf("Seting white's input mode to human\n\r");
+			break;
+		case 1:
+			newMode = fpga;
+			xil_printf("Seting white's input mode to FPGA AI\n\r");
+			break;
+		case 2:
+			newMode = uart;
+			xil_printf("Seting white's input mode to UART\n\r");
+			break;
+		default:
+			newMode = Gameboard.WhiteMode;
+			break;
+		}
+		Gameboard.WhiteMode = newMode;
+	}
+}
+
+void HandleBlackModeTouch(TouchSensor* touchSensor, button_t * Button){
+
+	u16 GridX, GridY;
+	if (Button_GetGridLoc(Button, touchSensor->LastTouch.x, touchSensor->LastTouch.y,
+				&GridX, &GridY)){
+		player_mode_t newMode;
+		switch (GridX){
+		case 0:
+			newMode = human;
+			xil_printf("Setting black's input mode to human\n\r");
+			break;
+		case 1:
+			newMode = fpga;
+			xil_printf("Setting black's input mode to FPGA AI\n\r");
+			break;
+		case 2:
+			newMode = uart;
+			xil_printf("Setting black's input mode to UART\n\r");
+			break;
+		default:
+			newMode = Gameboard.BlackMode;
+			break;
+		}
+		Gameboard.BlackMode = newMode;
+	}
 }
 
 void RecvUartCommand(XUartLite * InstPtr){
 
 	u8 dataBuffer[3];
 	XUartLite_Recv(InstPtr,&dataBuffer,3);
+	printf("UART command: %c%c%c\n\r", dataBuffer[0],dataBuffer[1],dataBuffer[2]);
+
 	if ((char)dataBuffer[0] == '0'){
-		//TODO: ResetBoard
+		player_mode_t whiteMode = Gameboard.WhiteMode;
+		player_mode_t blackMode = Gameboard.BlackMode;
+
+		if (dataBuffer[1] == 'F'){
+			blackMode = fpga;
+		} else if(dataBuffer[1] == 'U'){
+			blackMode = uart;
+		} else if (dataBuffer[2] == 'H'){
+			blackMode = human;
+		}
+
+		if (dataBuffer[2] == 'F'){
+			whiteMode = fpga;
+		} else if(dataBuffer[2] == 'U'){
+			whiteMode = uart;
+		} else if (dataBuffer[2] == 'H'){
+			whiteMode = human;
+		}
+
+		Gameboard_Initialize(&Gameboard, blackMode, whiteMode);
+		Gameboard_RenderBoard(&Gameboard);
+
 	} else if ((dataBuffer[0] >= 'A' && dataBuffer[0] <= ('A' + BOARD_SIZE)) &&
 				dataBuffer[2] >= 'A' && dataBuffer[2] <= ('A' + BOARD_SIZE)) {
-		Gameboard_PlayMove(&Gameboard,dataBuffer[0] - 'A' , dataBuffer[2] - 'A');
-	} else {
-		printf("Invalid UART command: %c%c%c\n\r", dataBuffer[0],dataBuffer[1],dataBuffer[2]);
+		//If we expect a move from the uart, play it now, otherwise ignore this command.
+		if (((Gameboard.MoveBufferSize % 2) ? Gameboard.WhiteMode : Gameboard.BlackMode) == uart) {
+			Gameboard_PlayMove(&Gameboard,dataBuffer[0] - 'A' , dataBuffer[2] - 'A', (Gameboard.MoveBufferSize % 2) ? P1 : P2);
+		}
 	}
+
+
 
 }
 
-void SendUartMove(XUartLite * InstPtr, u32 X, u32 Y){
+void SendUartCommand(XUartLite * InstPtr, u32 X, u32 Y){
 	u8 dataBuffer[4];
 	dataBuffer[0] = X + 'A';
 	dataBuffer[1] = ',';

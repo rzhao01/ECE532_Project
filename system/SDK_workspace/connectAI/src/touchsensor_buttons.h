@@ -44,7 +44,7 @@ typedef struct button_t {
 
 	u16 PosX, PosY; //Used to define location.
 	u16 DimA, DimB; //Used to define size Dim_A = radius in case of circle;
-	u16 GridSize; //Defines the number of subdivisions in the X and Y direction
+	u16 GridSizeX, GridSizeY; //Defines the number of subdivisions in the X and Y direction
 
 	int Enabled; //Used to determine if button is enabled
 	TouchSensorButtons_Handler Handler; // Function pointer to the button specific handler.
@@ -104,7 +104,7 @@ int Button_GetGridLoc(button_t * Button, u16 TouchX, u16 TouchY, u16 * GridX, u1
 
 void Button_SetCircleDim(button_t * Button, u16 radius, u16 X, u16 Y);
 void Button_SetRectDim(button_t * Button,  u16 LenX, u16 LenY, u16 X, u16 Y);
-void Button_SetGridDim(button_t * Button,  u16 LenX, u16 LenY, u16 X, u16 Y, u16 GridSize);
+void Button_SetGridDim(button_t * Button,  u16 LenX, u16 LenY, u16 X, u16 Y, u16 GridSizeX , u16 GridSizeY);
 void Button_AssignHandler(button_t * Button, void * FuncPtr);
 
 
