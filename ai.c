@@ -17,14 +17,12 @@
 #define NABS(x) ((x) > 0 ? (-(x)) : (x))
 #define PARITY(x) ((x) % 2 == 0 ? (-1) : (1))
 
-#define MAX_SCORE 1000000000
+#define MAX_SCORE 100000000
 #define C_P4 1024*8
 #define C_O3 1024*8
 #define C_P3 1024*3
 #define C_O2 8
 #define C_P2 8
-
-TREE_NODE tree_node_array[NUM_NODES];
 
 AI_PLAYER default_ai () {
     AI_PLAYER ai;
@@ -66,6 +64,8 @@ int board_count_score (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O) {
     score = ai.CP4*C.p4[p] - ai.CO3*C.p3[o] + ai.CP3*C.p3[p] - ai.CO2*C.p2[o] + ai.CP2*C.p2[p];
     if (C.p5[p] > 0)
         score = MAX_SCORE;          // win
+    else if (C.p5[o] > 0)
+        score = -MAX_SCORE;         // lose
     else if (C.p4[o] > 0)
         score = -(MAX_SCORE-2);     // lose
     else if (C.p4[p] > 1)
@@ -114,7 +114,7 @@ int get_best_move_n (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE
     }
 
     int n_moves = 0;
-    
+
     // try every move and maximize the board score
     for (int r = 0; r < BOARD_ROWS; ++r) {
         for (int c = 0; c < BOARD_COLS; ++c) {
@@ -126,10 +126,10 @@ int get_best_move_n (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE
 
             int score = board_position_weight(bb, P, O) + board_count_score(ai, bb, P, O);
 
-            //printf ("Score (%2d,%2d) -> %d\n", r, c, score);
-            for (int i = 0; i < MOVE_BREADTH; ++i) {
-                if (score > best_score[i] || ((score==best_score[i]) && (rand()%2 == 1))) {
-                    // shift every score down
+            //printf ("\tScored move (%2d,%2d) -> %5d\n", r, c, score);
+            for (int i = 0; i < MOVE_BREADTH; i++) {
+                if (score > best_score[i] || ((score==best_score[i]) && (rand()%2 == 1)) || moves[i].row == -1) {
+                    // shift every move and score down
                     for (int j = MOVE_BREADTH-2; j >= i; --j) {
                         best_score[j+1] = best_score[j];
                         moves[j+1] = moves[j];
@@ -159,76 +159,58 @@ int get_move_ai1 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
 	return 1;
 }
 
-void traverse_tree(int index, int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
-    for (int i = 0; i < layer; i++) debug_printf ("  ");
-    debug_printf ("layer %d, ind %d, P%d. move(%2d,%2d) ", layer, index, P.stone, move->row, move->col); 
+int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
+    int i, score_to_return;;
+    for (i = 0; i < layer; i++) debug_printf ("  ");
+    debug_printf ("layer %d, P%d. move(%2d,%2d) ", layer, P.stone, move->row, move->col); 
 
     // play the move passed to us except for the root node
-    if (index != 0) {
+    if (layer != 0) {
         assert (move->row >= 0 && move->col >= 0);
         set_square (b, move->row, move->col, P.stone);
     }
-    TREE_NODE* curr_node = tree_node_array + index;
-/*
-    SDL_Surface* screen;
-    initDisplay (&screen, "debug");
-    
-    drawBoard (screen, b);
-    waitEvent (screen);
-*/
+
     // if this is a leaf node
     if (layer == MOVE_DEPTH) {
         // calculate score after best opponent move
-        //COORD temp;
-        curr_node->score = board_position_weight(b, P, O) + board_count_score(ai, b, P, O);
-        debug_printf ("  score %d.\n", curr_node->score);
+        score_to_return = board_position_weight(b, P, O) + board_count_score(ai, b, P, O);
+        debug_printf ("  score %d.\n", score_to_return);
     }
     // if not a leaf node
     else {
         // generate the MOVE_BREADTH best moves from this position
         COORD moves[MOVE_BREADTH];
         int n_moves = get_best_move_n (ai, b, O, P, moves);
-        
-        if (layer < 2) {
-            debug_printf ("  generated %d moves.\n", n_moves);
-        }
+        debug_printf ("  generated %d moves.\n", n_moves);
 
         // visit each child using 1 of the MOVE_BREADTH moves, invert O and P
-        int i;
+        int best_i = -1;
+        score_to_return = -MAX_SCORE;
         for (i = 0; i < n_moves; ++i) {
-            traverse_tree (index*MOVE_BREADTH+i+1, layer+1, ai, b, O, P, moves+i);
-        }
-        
-        // maximize score
-        int best_i = 0;
-        curr_node->score = -MAX_SCORE;
-        for (i = 0; i < n_moves; ++i) {
-            TREE_NODE* t = tree_node_array + index*MOVE_BREADTH+i+1;
-            if (t->score > curr_node->score) {
+            int score = tree_search (layer+1, ai, b, O, P, moves+i);
+            if (score > score_to_return || best_i == -1) {
+                score_to_return = score;
                 best_i = i;
-                curr_node->score = t->score;
             }
         }
 
-        if (index == 0)
+        if (layer == 0)
             *move = moves[best_i];
         else if (layer % 2 == 1) // opp takes next action
-            curr_node->score = -curr_node->score;
+            score_to_return = -score_to_return;
 
-        if (layer < 2) {
-            for (int i = 0; i < layer; i++) debug_printf ("  ");
-            debug_printf ("internal (%d), index %d, P%d. move (%d,%d) final score %d.\n", 
-                layer, index, P.stone, move->row, move->col, curr_node->score);
-        }
+        for (i = 0; i < layer; i++) debug_printf ("  ");
+        debug_printf ("final score (%2d,%2d) -> %d.\n", move->row, move->col, score_to_return);
     }
     
     // unplay the move
-    if (index != 0) set_square (b, move->row, move->col, STONE_NONE);
+    if (layer != 0) set_square (b, move->row, move->col, STONE_NONE);
+    return score_to_return;
 }
 
 int get_move_ai2 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
     // starting at the top level (layer 0) node, process the entire tree
-    traverse_tree (0,0, ai, b, O, P, move);
+    tree_search (0, ai, b, O, P, move);
     return 1;
 }
 
