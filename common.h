@@ -11,8 +11,9 @@
 #define STONE_P1 1
 #define STONE_P2 2
 
-#define MOVE_BREADTH 8
-#define MOVE_DEPTH 3
+// currently MOVE_DEPTH must be odd for the AI to work properly
+#define MOVE_BREADTH 12
+#define MOVE_DEPTH 5
 #define NUM_NODES MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH*MOVE_BREADTH
 
 #ifdef SYNTHESIS

@@ -54,9 +54,12 @@ int main()
             // depending on which turn it is let the appropriate player move
             if (Curr_P.type == HUMAN)
                 status = get_move_player (screen, master_board, Curr_P, &move);
-            else
+            else {
+                printf ("Working...\n");
                 status = get_move_ai2 (ai, master_board, Curr_P, Opp_P, &move);
-   
+                printf ("Done.\n");
+            }
+
             if (status == 0)
                 break;
 
