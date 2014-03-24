@@ -80,4 +80,37 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/ai.c</name>
+			<type>1</type>
+			<locationURI>AI_SOURCE/ai.c</locationURI>
+		</link>
+		<link>
+			<name>src/ai.h</name>
+			<type>1</type>
+			<locationURI>AI_SOURCE/ai.h</locationURI>
+		</link>
+		<link>
+			<name>src/board.c</name>
+			<type>1</type>
+			<locationURI>AI_SOURCE/board.c</locationURI>
+		</link>
+		<link>
+			<name>src/board.h</name>
+			<type>1</type>
+			<locationURI>AI_SOURCE/board.h</locationURI>
+		</link>
+		<link>
+			<name>src/common.h</name>
+			<type>1</type>
+			<locationURI>AI_SOURCE/common.h</locationURI>
+		</link>
+	</linkedResources>
+	<variableList>
+		<variable>
+			<name>AI_SOURCE</name>
+			<value>$%7BPARENT-3-PROJECT_LOC%7D</value>
+		</variable>
+	</variableList>
 </projectDescription>
