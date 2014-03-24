@@ -227,7 +227,7 @@ void PrintTouchCoordinates(TouchSensor* InstPtr){
 void HandleAiMove(AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O){
 	//TODO: Fix row/col order
 	COORD move;
-	get_move_ai1 (ai, b, P, O, &move);
+	get_move_ai2 (ai, b, P, O, &move);
 	Gameboard_PlayMove(&Gameboard,(u32)move.col,(u32)move.row,P.num);
 }
 

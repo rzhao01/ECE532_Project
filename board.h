@@ -32,7 +32,7 @@ int check_board_win (BOARD b, PLAYER P);
 #ifdef MICROBLAZE
 	//Initialization function
 	int initialize_accelerator(XGenerate_board_counts * accel, unsigned int accelerator_base_address);
-	void generate_board_counts (ELEM b[BOARD_ELEMS], COUNTS * results);
+	void hardened_generate_board_counts (ELEM b[BOARD_ELEMS], COUNTS * results);
 	XGenerate_board_counts board_count_accelerator;
 	#define BOARD_OFFSET  0x1000000
 	#define RESULT_OFFSET 0x1000020

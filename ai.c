@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DEBUG
+
+//#define DEBUG
 
 #ifdef MICROBLAZE
 	#include "xil_assert.h"
@@ -13,6 +14,9 @@
 	#else
 		#define debug_printf(format, ...)
 	#endif
+
+//#define PRUNING
+
 #else
 	#include <limits.h>
 	#include "graphics.h"
@@ -71,8 +75,9 @@ int board_count_score (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O) {
     COUNTS C, D;
 
 	#ifdef MICROBLAZE
+    //generate_board_counts (b, &C);
     hardened_generate_board_counts(b, &C);
-    generate_board_counts(b, &D);
+    //generate_board_counts(b, &D);
 
 	#else
     generate_board_counts (b, &C);
@@ -87,9 +92,9 @@ int board_count_score (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O) {
     score = ai.CP4*C.p4[p] - ai.CO3*C.p3[o] + ai.CP3*C.p3[p] - ai.CO2*C.p2[o] + ai.CP2*C.p2[p];
 
 	#ifdef MICROBLAZE
-    	int score2 = ai.CP4*D.p4[p] - ai.CO3*D.p3[o] + ai.CP3*D.p3[p] - ai.CO2*D.p2[o] + ai.CP2*D.p2[p];
-    	if (score2 != score)
-    		printf("Hardware and software scores do not match. HW:%d SW:%d\n\r", score, score2);
+    	//int score2 = ai.CP4*D.p4[p] - ai.CO3*D.p3[o] + ai.CP3*D.p3[p] - ai.CO2*D.p2[o] + ai.CP2*D.p2[p];
+    	//if (score2 != score)
+    	//	printf("Hardware and software scores do not match. HW:%d SW:%d\n\r", score, score2);
 	#endif
 
 
@@ -193,9 +198,9 @@ int get_move_ai1 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
 	return 1;
 }
 
-int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
-    int i, score_to_return;
 
+int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_layer_score) {
+    int i, score_to_return;
     for (i = 0; i < layer; i++) debug_printf ("  ");
     debug_printf ("layer %d, P%d. move(%2d,%2d) ", layer, P.stone, move->row, move->col); 
 
@@ -222,24 +227,49 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
         int n_moves = get_best_move_n (ai, b, O, P, moves);
         debug_printf ("  generated %d moves.\n", n_moves);
 
-        // visit each child using 1 of the MOVE_BREADTH moves, invert O and P
         int best_i = -1;
-        score_to_return = -MAX_SCORE;
-        for (i = 0; i < n_moves; ++i) {
-            int score = tree_search (layer+1, ai, b, O, P, moves+i);
-            if (score > score_to_return || best_i == -1) {
-                score_to_return = score;
-                best_i = i;
+        
+        // visit each child using 1 of the MOVE_BREADTH moves, invert O and P
+        if (layer % 2 == 0) {   
+            // curr layer is a max layer
+            score_to_return = -MAX_SCORE;
+            for (i = 0; i < n_moves; ++i) {
+                int score = tree_search (layer+1, ai, b, O, P, moves+i, score_to_return);
+                if (score > score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
+                    score_to_return = score;
+                    best_i = i;
+                }
+                #ifdef PRUNING
+                // previous layer is min layer. Stop computation when curr layer score
+                // is greated than prev layer score
+                if (score_to_return > prev_layer_score)
+                    break;
+                #endif
+            }
+        }
+        else {                  
+            // curr layer is min layer
+            score_to_return = MAX_SCORE;
+            for (i = 0; i < n_moves; ++i) {
+                int score = tree_search (layer+1, ai, b, O, P, moves+i, score_to_return);
+                if (score < score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
+                    score_to_return = score;
+                    best_i = i;
+                }
+                #ifdef PRUNING
+                if (score_to_return < prev_layer_score)
+                    break;
+                #endif
             }
         }
 
         if (layer == 0)
             *move = moves[best_i];
-        else if (layer % 2 == 1) // opp takes next action
+        /*else if (layer % 2 == 0) // opp takes next action
             score_to_return = -score_to_return;
-
+        */
         for (i = 0; i < layer; i++) debug_printf ("  ");
-        debug_printf ("final score (%2d,%2d) -> %d.\n", move->row, move->col, score_to_return);
+        debug_printf ("final score P%d (%2d,%2d) -> %d.\n", P.stone, move->row, move->col, score_to_return);
     }
     
     // unplay the move
@@ -249,7 +279,7 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
 
 int get_move_ai2 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
     // starting at the top level (layer 0) node, process the entire tree
-    tree_search (0, ai, b, O, P, move);
+    tree_search (0, ai, b, O, P, move, 0);
     return 1;
 }
 

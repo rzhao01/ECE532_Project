@@ -179,7 +179,7 @@ void generate_board_counts (volatile unsigned int* master, unsigned int board_ad
 
 	COUNTS result;
 	#pragma HLS RESOURCE variable=master core=AXI4M
-	#pragma HLS INTERFACE ap_bus port=master
+	#pragma HLS INTERFACE ap_bus depth=16 port=master
 	#pragma HLS INTERFACE ap_ctrl_hs port=return
 	#pragma HLS INTERFACE ap_none port=board_addr
 	#pragma HLS INTERFACE ap_none port=result_addr
