@@ -214,7 +214,7 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
                     best_i = i;
                 }
                 #ifdef PRUNING
-                if (score_to_return < prev_layer_score)
+                if (layer != 0 && score_to_return < prev_layer_score)
                     break;
                 #endif
             }
@@ -222,9 +222,7 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
 
         if (layer == 0)
             *move = moves[best_i];
-        /*else if (layer % 2 == 0) // opp takes next action
-            score_to_return = -score_to_return;
-        */
+        
         for (i = 0; i < layer; i++) debug_printf ("  ");
         debug_printf ("final score P%d (%2d,%2d) -> %d.\n", P.stone, move->row, move->col, score_to_return);
     }
@@ -234,9 +232,15 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
     return score_to_return;
 }
 
-int get_move_ai2 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
-    // starting at the top level (layer 0) node, process the entire tree
-    tree_search (0, ai, b, O, P, move, 0);
+int get_move_ai2 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, int turn, COORD* move) {
+    if (turn == 1) {
+        move->row = BOARD_ROWS/2;
+        move->col = BOARD_COLS/2;
+    }
+    else {
+        // starting at the top level (layer 0) node, process the entire tree
+        tree_search (0, ai, b, O, P, move, 0);
+    }
     return 1;
 }
 

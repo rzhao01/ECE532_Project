@@ -18,11 +18,6 @@ inline void set_square (BOARD b, int row, int col, ELEM val) {
     b[row*BOARD_COLS + col] = val;
 }
 
-COUNTS count_horiz (BOARD b);
-COUNTS count_vert (BOARD b);
-COUNTS count_ne (BOARD b);
-COUNTS count_se (BOARD b);
-
 COUNTS generate_board_counts (ELEM b[BOARD_ELEMS]);
 
 int check_board_full (BOARD b);

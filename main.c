@@ -56,7 +56,7 @@ int main()
                 status = get_move_player (screen, master_board, Curr_P, &move);
             else {
                 printf ("Working...\n");
-                status = get_move_ai2 (ai, master_board, Curr_P, Opp_P, &move);
+                status = get_move_ai2 (ai, master_board, Curr_P, Opp_P, turn, &move);
                 printf ("Done.\n");
             }
 
