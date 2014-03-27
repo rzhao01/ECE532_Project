@@ -5,6 +5,7 @@ IntStyle: default
 Flow: ise
 ModuleSearchPath: G:/Programs/Xilinx/Atlys_BSB_Support_v_3_6/Atlys_BSB_Support_v_3_6/Atlys_AXI_BSB_Support/lib
 ModuleSearchPath: G:/Programs/Xilinx/14.2/ISE_DS/EDK/edk_user_repository
+ModuleSearchPath: G:/Programs/Xilinx/14.2/ISE_DS/EDK/edk_user_repository
 MHS File: system.mhs
 Architecture: spartan6
 Device: xc6slx45

@@ -1,19 +1,36 @@
-#include "ai.h"
 #include "board.h"
+#include "ai.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
-#include <limits.h>
 
-#include "graphics.h"
+
+//#define DEBUG
+
+#ifdef MICROBLAZE
+	#include "xil_assert.h"
+	#define printf xil_printf
+		#ifdef DEBUG
+		#define debug_printf(format, ...) xil_printf(format, ##__VA_ARGS__)
+	#else
+		#define debug_printf(format, ...)
+	#endif
 
 //#define PRUNING
 
-#ifdef DEBUG
-    #define debug_printf(format, ...) printf(format, ##__VA_ARGS__)
 #else
-    #define debug_printf(format, ...)
+	#include <limits.h>
+	#include "graphics.h"
+	#include <assert.h>
+
+
+	#ifdef DEBUG
+		#define debug_printf(format, ...) printf(format, ##__VA_ARGS__)
+	#else
+		#define debug_printf(format, ...)
+	#endif
+
 #endif
+
 
 #define NABS(x) ((x) > 0 ? (-(x)) : (x))
 #define PARITY(x) ((x) % 2 == 0 ? (-1) : (1))
@@ -38,11 +55,12 @@ AI_PLAYER default_ai () {
 // more weight to center squares
 inline int board_position_weight (BOARD b, PLAYER P, PLAYER O) {
     int score = 0;
-    for (int r = 0; r < BOARD_ROWS; ++r) {
-        for (int c = 0; c < BOARD_COLS; ++c) {
+    int r, c;
+    for (r = 0; r < BOARD_ROWS; ++r) {
+        for (c = 0; c < BOARD_COLS; ++c) {
             ELEM elem = get_square (b, r, c);
             if (elem == P.stone) // occupied
-                score += BOARD_ROWS + NABS(r - BOARD_ROWS/2) + NABS(c - BOARD_COLS/2);
+                score += BOARD_ROWS - NABS(r - BOARD_ROWS/2) - NABS(c - BOARD_COLS/2);
             else if (elem == O.stone)
                 score -= BOARD_ROWS + NABS(r - BOARD_ROWS/2) + NABS(c - BOARD_COLS/2);
         }
@@ -54,8 +72,17 @@ int board_count_score (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O) {
     int p = P.num;
     int o = O.num;
     int score;
+    COUNTS C, D;
 
-    COUNTS C = generate_board_counts (b);
+	#ifdef MICROBLAZE
+    //generate_board_counts (b, &C);
+    hardened_generate_board_counts(b, &C);
+    //generate_board_counts(b, &D);
+
+	#else
+    generate_board_counts (b, &C);
+	#endif
+
 /*
     printf ("Board Evaluation:\n");
     printf ("\tp5=%3d, o5=%3d\n\tp4=%3d, o4=%3d\n\tp3=%3d, o3=%3d\n\tp2=%3d, o2=%3d\n", 
@@ -63,6 +90,14 @@ int board_count_score (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O) {
 */
     
     score = ai.CP4*C.p4[p] - ai.CO3*C.p3[o] + ai.CP3*C.p3[p] - ai.CO2*C.p2[o] + ai.CP2*C.p2[p];
+
+	#ifdef MICROBLAZE
+    	//int score2 = ai.CP4*D.p4[p] - ai.CO3*D.p3[o] + ai.CP3*D.p3[p] - ai.CO2*D.p2[o] + ai.CP2*D.p2[p];
+    	//if (score2 != score)
+    	//	printf("Hardware and software scores do not match. HW:%d SW:%d\n\r", score, score2);
+	#endif
+
+
     if (C.p5[p] > 0)
         score = MAX_SCORE;          // win
     else if (C.p5[o] > 0)
@@ -78,11 +113,11 @@ int board_count_score (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O) {
 // get the best move
 int get_best_move (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
     BOARD bb;
-    int best_row=0, best_col=0;
+    int best_row=0, best_col=0, r, c;
     int best_score = -MAX_SCORE;
     // try every move and maximize the board score
-    for (int r = 0; r < BOARD_ROWS; ++r) {
-        for (int c = 0; c < BOARD_COLS; ++c) {
+    for (r = 0; r < BOARD_ROWS; ++r) {
+        for (c = 0; c < BOARD_COLS; ++c) {
             if (get_square (b, r, c)) // occupied
                 continue;
 
@@ -109,16 +144,18 @@ int get_best_move (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
 int get_best_move_n (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE_BREADTH]) {
     BOARD bb;
     int best_score[MOVE_BREADTH];
-    for (int i = 0; i < MOVE_BREADTH; ++i) {
+    int i;
+    for (i = 0; i < MOVE_BREADTH; ++i) {
         moves[i].row = -1;
         best_score[i] = -MAX_SCORE;
     }
 
     int n_moves = 0;
+    int r, c;
 
     // try every move and maximize the board score
-    for (int r = 0; r < BOARD_ROWS; ++r) {
-        for (int c = 0; c < BOARD_COLS; ++c) {
+    for (r = 0; r < BOARD_ROWS; ++r) {
+        for (c = 0; c < BOARD_COLS; ++c) {
             if (get_square (b, r, c)) // occupied
                 continue;
 
@@ -127,11 +164,12 @@ int get_best_move_n (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE
 
             int score = board_position_weight(bb, P, O) + board_count_score(ai, bb, P, O);
 
+            int i, j;
             //printf ("\tScored move (%2d,%2d) -> %5d\n", r, c, score);
-            for (int i = 0; i < MOVE_BREADTH; i++) {
+            for (i = 0; i < MOVE_BREADTH; i++) {
                 if (score > best_score[i] || ((score==best_score[i]) && (rand()%2 == 1)) || moves[i].row == -1) {
                     // shift every move and score down
-                    for (int j = MOVE_BREADTH-2; j >= i; --j) {
+                    for (j = MOVE_BREADTH-2; j >= i; --j) {
                         best_score[j+1] = best_score[j];
                         moves[j+1] = moves[j];
                     }
@@ -160,14 +198,19 @@ int get_move_ai1 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
 	return 1;
 }
 
+
 int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_layer_score) {
-    int i, score_to_return;;
+    int i, score_to_return;
     for (i = 0; i < layer; i++) debug_printf ("  ");
     debug_printf ("layer %d, P%d. move(%2d,%2d) ", layer, P.stone, move->row, move->col); 
 
     // play the move passed to us except for the root node
     if (layer != 0) {
-        assert (move->row >= 0 && move->col >= 0);
+	#ifdef MICROBLAZE
+    	Xil_AssertNonvoid(move->row >= 0 && move->col >= 0);
+    #else
+    	assert (move->row >= 0 && move->col >= 0);
+	#endif
         set_square (b, move->row, move->col, P.stone);
     }
 
@@ -244,7 +287,10 @@ int get_move_ai2 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, int turn, COORD* mo
     return 1;
 }
 
+#ifndef MICROBLAZE
 void print_ai (FILE* fp, AI_PLAYER ai) {
 	fprintf (fp, "C4: %15d, %15s\nC3: %15d, %15d\nC2: %15d, %15d\n", 
 		ai.CP4, "X", ai.CP3, ai.CO3, ai.CP2, ai.CO2);
 }
+#endif
+

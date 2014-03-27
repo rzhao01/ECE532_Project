@@ -7,6 +7,7 @@
 #define BOARD_COLS 11
 #define BOARD_ELEMS 121
 
+
 #define STONE_NONE 0
 #define STONE_P1 1
 #define STONE_P2 2
@@ -49,13 +50,15 @@ typedef struct {
 #define STATUSBAR_SIZE 15
 #define EXTRA_WIDTH 200
 
-#define GRAY 0xffffff50
-#define WHITE 0xffffffff
-#define RED 0xff0000ff
-#define BLACK 0x00000000
-#define YELLOW 0xffff00ff
-#define PURPLE 0xff00ffff
-#define BLUE 0x00ffffff
-#define GREEN 0x00ff00ff
+#ifndef MICROBLAZE
+	#define GRAY 0xffffff50
+	#define WHITE 0xffffffff
+	#define RED 0xff0000ff
+	#define BLACK 0x00000000
+	#define YELLOW 0xffff00ff
+	#define PURPLE 0xff00ffff
+	#define BLUE 0x00ffffff
+	#define GREEN 0x00ff00ff
+#endif
 
 #endif

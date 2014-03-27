@@ -18,7 +18,7 @@
 #include "tft.h"
 #include "gameboard.h"
 #include "xuartlite.h"
-#include "board.h"
+#include "../../../../board.h"
 
 #define printf xil_printf
 
@@ -29,7 +29,7 @@ void HandleWhiteModeTouch(TouchSensor* touchSensor, button_t * Button);
 void HandleBlackModeTouch(TouchSensor* touchSensor, button_t * Button);
 
 void RecvUartCommand(XUartLite * InstPtr);
-//void SendUartCommand(XUartLite * InstPtr);
+void SendUartCommand(XUartLite * InstPtr, u32 X, u32 Y);
 void HandleAiMove(AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O);
 void blackScreen();
 
@@ -40,6 +40,7 @@ ButtonManager_t Manager;
 gameboard_t Gameboard;
 XStatus Status;
 TFT tft;
+
 
 int main()
 {
@@ -76,14 +77,8 @@ int main()
     TouchSensorButtons_RegisterButton(&Manager, &ResetButton);
     TouchSensorButtons_EnableButton(&ResetButton);
 
-
-    //Example of how to disable button below. See header
-    //file for details
-    // TouchSensorButtons_DisableButton(&MyRect);
-
-    //Example of how to remove button from the button manager. See
-    //header file for details
-    //TouchSensorButtons_RemoveButton(&Manager, $MyRect);
+    /********************** BoardCount Accelerator Setup********************/
+    initialize_accelerator(&board_count_accelerator, XPAR_GENERATE_BOARD_COUNTS_TOP_0_S_AXI_CTRL_BASEADDR);
 
     /********************** TFT Setup *********************/
     blackScreen();
@@ -104,9 +99,6 @@ int main()
 	TouchSensorButtons_RenderButton(&BlackModeButton, RED, &tft);
 
 
-
-
-    Gameboard_Initialize(&Gameboard, human, uart);
     Gameboard.TftPtr = &tft;
 
     /********************** UART Setup *********************/
@@ -166,7 +158,7 @@ int main()
 		   XPAR_AXI_INTC_0_TOUCHSENSOR_0_INTERRUPT_INTR);
    XIntc_Enable(&InterruptController,
 		   XPAR_AXI_INTC_0_RS232_UART_1_INTERRUPT_INTR);
-   microblaze_enable_interrupts();
+
    XUartLite_ResetFifos(&Uart);
    XUartLite_EnableInterrupt(&Uart);
 
@@ -174,7 +166,8 @@ int main()
    PLAYER Player1, Player2;
    Player1.num = P1;
    Player2.num = P2;
-   Gameboard_Initialize(&Gameboard,human,uart);
+   Gameboard_Initialize(&Gameboard,human,fpga);
+   microblaze_enable_interrupts();
 
    while (1) {
 		PLAYER Curr_P, Opp_P;
@@ -233,9 +226,9 @@ void PrintTouchCoordinates(TouchSensor* InstPtr){
 
 void HandleAiMove(AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O){
 	//TODO: Fix row/col order
-	char GridX,GridY;
-	get_move_ai1 (ai, b, P, O, &GridY, &GridX);
-	Gameboard_PlayMove(&Gameboard,(u32)GridX,(u32)GridY,P.num);
+	COORD move;
+	get_move_ai2 (ai, b, P, O, &move);
+	Gameboard_PlayMove(&Gameboard,(u32)move.col,(u32)move.row,P.num);
 }
 
 void HandleGameboardTouch(TouchSensor* touchSensor, button_t * Button){

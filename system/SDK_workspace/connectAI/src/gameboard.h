@@ -14,9 +14,9 @@
 #include "xil_types.h"
 #include "xil_assert.h"
 #include "graphics.h"
-#include "common.h"
-#include "board.h"
-#include "ai.h"
+#include "../../../../common.h"
+#include "../../../../board.h"
+#include "../../../../ai.h"
 
 
 /************************** Constant Definitions *****************************/
