@@ -4,7 +4,8 @@
 #include <stdio.h>
 
 
-//#define DEBUG
+#define DEBUG
+//#define PRUNING
 
 #ifdef MICROBLAZE
 	#include "xil_assert.h"
@@ -14,8 +15,6 @@
 	#else
 		#define debug_printf(format, ...)
 	#endif
-
-//#define PRUNING
 
 #else
 	#include <limits.h>
@@ -35,13 +34,6 @@
 #define NABS(x) ((x) > 0 ? (-(x)) : (x))
 #define PARITY(x) ((x) % 2 == 0 ? (-1) : (1))
 
-#define MAX_SCORE 100000000
-#define C_P4 1024*8
-#define C_O3 1024*8
-#define C_P3 1024*3
-#define C_O2 8
-#define C_P2 8
-
 AI_PLAYER default_ai () {
     AI_PLAYER ai;
     ai.CP4 = C_P4;
@@ -60,58 +52,31 @@ inline int board_position_weight (BOARD b, PLAYER P, PLAYER O) {
         for (c = 0; c < BOARD_COLS; ++c) {
             ELEM elem = get_square (b, r, c);
             if (elem == P.stone) // occupied
-                score += BOARD_ROWS - NABS(r - BOARD_ROWS/2) - NABS(c - BOARD_COLS/2);
+                score += 2*BOARD_ROWS + NABS(r - BOARD_ROWS/2) + NABS(c - BOARD_COLS/2);
             else if (elem == O.stone)
-                score -= BOARD_ROWS + NABS(r - BOARD_ROWS/2) + NABS(c - BOARD_COLS/2);
+                score -= 2*BOARD_ROWS + NABS(r - BOARD_ROWS/2) + NABS(c - BOARD_COLS/2);
         }
     }
+    //printf ("Board Position Weight = %d\n", score);
     return score; 
 }
 
-int board_count_score (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O) {
+int board_count_score (BOARD b, PLAYER P, PLAYER O) {
     int p = P.num;
     int o = O.num;
     int score;
-    COUNTS C, D;
 
 	#ifdef MICROBLAZE
-    //generate_board_counts (b, &C);
-    hardened_generate_board_counts(b, &C);
-    //generate_board_counts(b, &D);
-
+    hardened_generate_board_count_score(b, p, o, &score);
 	#else
-    generate_board_counts (b, &C);
+    generate_board_count_score (b, p, o, &score);
 	#endif
-
-/*
-    printf ("Board Evaluation:\n");
-    printf ("\tp5=%3d, o5=%3d\n\tp4=%3d, o4=%3d\n\tp3=%3d, o3=%3d\n\tp2=%3d, o2=%3d\n", 
-                    C.p5[p],0, C.p4[p],C.p4[o], C.p3[p],C.p3[o], C.p2[p],C.p2[o]);
-*/
-    
-    score = ai.CP4*C.p4[p] - ai.CO3*C.p3[o] + ai.CP3*C.p3[p] - ai.CO2*C.p2[o] + ai.CP2*C.p2[p];
-
-	#ifdef MICROBLAZE
-    	//int score2 = ai.CP4*D.p4[p] - ai.CO3*D.p3[o] + ai.CP3*D.p3[p] - ai.CO2*D.p2[o] + ai.CP2*D.p2[p];
-    	//if (score2 != score)
-    	//	printf("Hardware and software scores do not match. HW:%d SW:%d\n\r", score, score2);
-	#endif
-
-
-    if (C.p5[p] > 0)
-        score = MAX_SCORE;          // win
-    else if (C.p5[o] > 0)
-        score = -MAX_SCORE;         // lose
-    else if (C.p4[o] > 0)
-        score = -(MAX_SCORE-2);     // lose
-    else if (C.p4[p] > 1)
-        score = MAX_SCORE-3;        // win in 1
     
     return score;
 }
 
 // get the best move
-int get_best_move (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
+int get_best_move (BOARD b, PLAYER P, PLAYER O, COORD* move) {
     BOARD bb;
     int best_row=0, best_col=0, r, c;
     int best_score = -MAX_SCORE;
@@ -124,7 +89,7 @@ int get_best_move (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
             copy_board (bb, b);
             set_square (bb, r, c, (int)P.num+1);
 
-            int score = board_position_weight(b, P, O) + board_count_score(ai, bb, P, O);
+            int score = board_position_weight(b, P, O) + board_count_score(bb, P, O);
             
             //printf ("Score (%2d,%2d) -> %d\n", r, c, score);
 
@@ -141,7 +106,7 @@ int get_best_move (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
 }
 
 // get the MOVE_BREADTH best moves
-int get_best_move_n (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE_BREADTH]) {
+int get_best_move_n (BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE_BREADTH]) {
     BOARD bb;
     int best_score[MOVE_BREADTH];
     int i;
@@ -162,10 +127,10 @@ int get_best_move_n (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE
             copy_board (bb, b);
             set_square (bb, r, c, (int)P.num+1);
 
-            int score = board_position_weight(bb, P, O) + board_count_score(ai, bb, P, O);
+            int score = board_position_weight(bb, P, O) + board_count_score(bb, P, O);
 
             int i, j;
-            //printf ("\tScored move (%2d,%2d) -> %5d\n", r, c, score);
+            printf ("\tScored move (%2d,%2d) -> %5d\n", r, c, score);
             for (i = 0; i < MOVE_BREADTH; i++) {
                 if (score > best_score[i] || ((score==best_score[i]) && (rand()%2 == 1)) || moves[i].row == -1) {
                     // shift every move and score down
@@ -193,13 +158,13 @@ int get_best_move_n (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE
     return n_moves;
 }
 
-int get_move_ai1 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move) {
-	get_best_move (ai, b, P, O, move);
+int get_move_ai1 (BOARD b, PLAYER P, PLAYER O, COORD* move) {
+	get_best_move (b, P, O, move);
 	return 1;
 }
 
 
-int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_layer_score) {
+int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_layer_score) {
     int i, score_to_return;
     for (i = 0; i < layer; i++) debug_printf ("  ");
     debug_printf ("layer %d, P%d. move(%2d,%2d) ", layer, P.stone, move->row, move->col); 
@@ -217,14 +182,14 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
     // if this is a leaf node
     if (layer == MOVE_DEPTH) {
         // calculate score after best opponent move
-        score_to_return = board_position_weight(b, P, O) + board_count_score(ai, b, P, O);
+        score_to_return = board_position_weight(b, P, O) + board_count_score(b, P, O);
         debug_printf ("  score %d.\n", score_to_return);
     }
     // if not a leaf node
     else {
         // generate the MOVE_BREADTH best moves from this position
         COORD moves[MOVE_BREADTH];
-        int n_moves = get_best_move_n (ai, b, O, P, moves);
+        int n_moves = get_best_move_n (b, O, P, moves);
         debug_printf ("  generated %d moves.\n", n_moves);
 
         int best_i = -1;
@@ -234,7 +199,7 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
             // curr layer is a max layer
             score_to_return = -MAX_SCORE;
             for (i = 0; i < n_moves; ++i) {
-                int score = tree_search (layer+1, ai, b, O, P, moves+i, score_to_return);
+                int score = tree_search (layer+1, b, O, P, moves+i, score_to_return);
                 if (score > score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
                     score_to_return = score;
                     best_i = i;
@@ -251,7 +216,7 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
             // curr layer is min layer
             score_to_return = MAX_SCORE;
             for (i = 0; i < n_moves; ++i) {
-                int score = tree_search (layer+1, ai, b, O, P, moves+i, score_to_return);
+                int score = tree_search (layer+1, b, O, P, moves+i, score_to_return);
                 if (score < score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
                     score_to_return = score;
                     best_i = i;
@@ -275,14 +240,14 @@ int tree_search (int layer, AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, COORD* mo
     return score_to_return;
 }
 
-int get_move_ai2 (AI_PLAYER ai, BOARD b, PLAYER P, PLAYER O, int turn, COORD* move) {
+int get_move_ai2 (BOARD b, PLAYER P, PLAYER O, int turn, COORD* move) {
     if (turn == 1) {
         move->row = BOARD_ROWS/2;
         move->col = BOARD_COLS/2;
     }
     else {
         // starting at the top level (layer 0) node, process the entire tree
-        tree_search (0, ai, b, O, P, move, 0);
+        tree_search (0, b, O, P, move, 0);
     }
     return 1;
 }

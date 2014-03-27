@@ -20,7 +20,6 @@ int main()
     // outer loop for menu options
     for (;;) {
         BOARD master_board;
-        AI_PLAYER ai = default_ai();
         PLAYER Player1, Player2;
         Player1.num = P1; Player1.stone = STONE_P1;
         Player2.num = P2; Player2.stone = STONE_P2;
@@ -56,7 +55,7 @@ int main()
                 status = get_move_player (screen, master_board, Curr_P, &move);
             else {
                 printf ("Working...\n");
-                status = get_move_ai2 (ai, master_board, Curr_P, Opp_P, turn, &move);
+                status = get_move_ai2 (master_board, Curr_P, Opp_P, turn, &move);
                 printf ("Done.\n");
             }
 
@@ -71,7 +70,7 @@ int main()
                 waitEvent (screen);
                 break;
             }
-            else if (check_board_win(master_board, Curr_P)) {
+            else if (check_board_win(master_board, Curr_P, Opp_P)) {
                 msgWin(screen, Curr_P);
                 waitEvent (screen);
                 break;

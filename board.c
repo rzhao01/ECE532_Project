@@ -233,29 +233,42 @@ void hardened_generate_board_counts (ELEM b[BOARD_ELEMS], COUNTS * results){
 
 #endif
 
-void generate_board_counts (ELEM b[BOARD_ELEMS], COUNTS * result){
-
-	zero_counts (result);
+void generate_board_count_score (ELEM b[BOARD_ELEMS], int p, int o, int* score){
+	COUNTS C;
+	int temp;
+	zero_counts (&C);
 	
 	COUNTS h = count_horiz (b);
-	add_counts (result, &h);
+	add_counts (&C, &h);
 	COUNTS v = count_vert (b);
-	add_counts (result, &v);
+	add_counts (&C, &v);
 	COUNTS ne = count_ne (b);
-	add_counts (result, &ne);
+	add_counts (&C, &ne);
 	COUNTS se = count_se (b);
-	add_counts (result, &se);
+	add_counts (&C, &se);
+
+	temp = C_P4*C.p4[p] - C_O3*C.p3[o] + C_P3*C.p3[p] - C_O2*C.p2[o] + C_P2*C.p2[p];
+
+    if (C.p5[p] > 0)
+        temp = MAX_SCORE;          // win
+    else if (C.p5[o] > 0)
+        temp = -MAX_SCORE;         // lose
+    else if (C.p4[o] > 0)
+        temp = -(MAX_SCORE-2);     // lose
+    else if (C.p4[p] > 1)
+        temp = MAX_SCORE-3;        // win in 1
+
+    *score = temp;
 }
 
-int check_board_win (BOARD b, PLAYER P) {
-	COUNTS result;
+int check_board_win (BOARD b, PLAYER P, PLAYER O) {
+	int score;
 
-#ifdef MICROBLAZE
-	hardened_generate_board_counts(b, &result);
-#else
-	generate_board_counts(b, &result);
-#endif
-	if (result.p5[(int)P.num] > 0)
-	    return 1;
-	return 0;
+	#ifdef MICROBLAZE
+	hardened_generate_board_count_score(b, P.num, O.num, &score);
+	#else
+	generate_board_count_score(b, P.num, O.num, &score);
+	#endif
+	
+	return (score == MAX_SCORE);
 }
