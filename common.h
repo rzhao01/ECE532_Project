@@ -14,15 +14,15 @@
 
 // currently MOVE_DEPTH must be odd for the AI to work properly
 #define MOVE_BREADTH 8
-#define MOVE_DEPTH 3
+#define MOVE_DEPTH 5
 #define NUM_NODES MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH*MOVE_BREADTH
 
 #define MAX_SCORE 100000000
-#define C_P4 1024*8
-#define C_O3 1024*8
-#define C_P3 1024*3
-#define C_O2 8
-#define C_P2 8
+#define C_P4 100//1024*8
+#define C_O3 100//1024*8
+#define C_P3 45//1024*3
+#define C_O2 20
+#define C_P2 20
 
 #ifdef SYNTHESIS
 typedef int2 ELEM;

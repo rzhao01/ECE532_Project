@@ -3,15 +3,8 @@
 	#include "xil_assert.h"
 #else
 	#include "assert.h"
+	#include "stdio.h"
 #endif
-
-ELEM get_square (BOARD b, int row, int col) {
-    return b[row*BOARD_COLS + col];
-
-}
-void set_square (BOARD b, int row, int col, ELEM val) {
-    b[row*BOARD_COLS + col] = val;
-}
 
 void assert_dims () {
 	#ifdef MICROBLAZE
@@ -194,6 +187,7 @@ COUNTS count_se (ELEM b[BOARD_ELEMS]) {
 	}
 	return result;
 }
+
 #ifdef MICROBLAZE
 int initialize_accelerator(XGenerate_board_counts * accel, unsigned int accelerator_base_address){
 	XGenerate_board_counts_Config AcceleratorConfig;
@@ -271,4 +265,22 @@ int check_board_win (BOARD b, PLAYER P, PLAYER O) {
 	#endif
 	
 	return (score == MAX_SCORE);
+}
+
+void print_board (BOARD b) {
+	int r, c;
+	printf ("#########################################\n");
+	for (r  = 0; r < BOARD_ROWS; ++r) {
+		for (c = 0; c < BOARD_COLS; ++c) {
+			ELEM elem = get_square (b, r, c);
+			if (elem == 1)
+				printf (" X ");
+			else if (elem == 2)
+				printf (" O ");
+			else
+				printf (" . ");
+		}
+		printf ("\n");
+	}
+	printf ("#########################################\n");
 }

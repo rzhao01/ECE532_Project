@@ -3,9 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-#define DEBUG
-//#define PRUNING
+//#define DEBUG
+#define PRUNING
 
 #ifdef MICROBLAZE
 	#include "xil_assert.h"
@@ -130,7 +129,7 @@ int get_best_move_n (BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE_BREADTH]) {
             int score = board_position_weight(bb, P, O) + board_count_score(bb, P, O);
 
             int i, j;
-            printf ("\tScored move (%2d,%2d) -> %5d\n", r, c, score);
+            //printf ("\tScored move (%2d,%2d) -> %5d\n", r, c, score);
             for (i = 0; i < MOVE_BREADTH; i++) {
                 if (score > best_score[i] || ((score==best_score[i]) && (rand()%2 == 1)) || moves[i].row == -1) {
                     // shift every move and score down
@@ -182,8 +181,12 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
     // if this is a leaf node
     if (layer == MOVE_DEPTH) {
         // calculate score after best opponent move
+
         score_to_return = board_position_weight(b, P, O) + board_count_score(b, P, O);
         debug_printf ("  score %d.\n", score_to_return);
+         #ifdef DEBUG
+            print_board (b);
+        #endif
     }
     // if not a leaf node
     else {
@@ -207,7 +210,7 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
                 #ifdef PRUNING
                 // previous layer is min layer. Stop computation when curr layer score
                 // is greated than prev layer score
-                if (score_to_return > prev_layer_score)
+                if (/*score_to_return > prev_layer_score && */score_to_return >= MAX_SCORE)
                     break;
                 #endif
             }
@@ -222,7 +225,7 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
                     best_i = i;
                 }
                 #ifdef PRUNING
-                if (layer != 0 && score_to_return < prev_layer_score)
+                if (layer != 0 && /*score_to_return < prev_layer_score && */score_to_return <= -(MAX_SCORE-2))
                     break;
                 #endif
             }
