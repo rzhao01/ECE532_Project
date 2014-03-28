@@ -56,7 +56,7 @@ int main()
             else {
                 printf ("Working...\n");
                 status = get_move_ai2 (master_board, Curr_P, Opp_P, turn, &move);
-                printf ("Done.\n");
+                printf ("Done. AI move (%d,%d)\n", move.row, move.col);
             }
 
             if (status == 0)

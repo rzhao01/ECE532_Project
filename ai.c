@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 //#define DEBUG
-#define PRUNING
+//#define PRUNING
 
 #ifdef MICROBLAZE
 	#include "xil_assert.h"
@@ -105,9 +105,8 @@ int get_best_move (BOARD b, PLAYER P, PLAYER O, COORD* move) {
 }
 
 // get the MOVE_BREADTH best moves
-int get_best_move_n (BOARD b, PLAYER P, PLAYER O, COORD moves[MOVE_BREADTH]) {
+int get_best_move_n (BOARD b, PLAYER P, PLAYER O, int best_score[MOVE_BREADTH], COORD moves[MOVE_BREADTH]) {
     BOARD bb;
-    int best_score[MOVE_BREADTH];
     int i;
     for (i = 0; i < MOVE_BREADTH; ++i) {
         moves[i].row = -1;
@@ -180,9 +179,14 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
 
     // if this is a leaf node
     if (layer == MOVE_DEPTH) {
-        // calculate score after best opponent move
-
         score_to_return = board_position_weight(b, P, O) + board_count_score(b, P, O);
+        if (score_to_return < MAX_SCORE-2) {
+            COORD temp;
+            int opp_score = get_best_move (b, O, P, &temp);
+            if (opp_score >= MAX_SCORE-2) {
+                score_to_return = -MAX_SCORE;
+            }
+        }
         debug_printf ("  score %d.\n", score_to_return);
          #ifdef DEBUG
             print_board (b);
@@ -192,7 +196,8 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
     else {
         // generate the MOVE_BREADTH best moves from this position
         COORD moves[MOVE_BREADTH];
-        int n_moves = get_best_move_n (b, O, P, moves);
+        int scores[MOVE_BREADTH];
+        int n_moves = get_best_move_n (b, O, P, scores, moves);
         debug_printf ("  generated %d moves.\n", n_moves);
 
         int best_i = -1;
@@ -202,32 +207,40 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
             // curr layer is a max layer
             score_to_return = -MAX_SCORE;
             for (i = 0; i < n_moves; ++i) {
+                if (scores[i] >= MAX_SCORE-10) {
+                    score_to_return = scores[i];
+                    best_i = i;
+                    break;
+                }
+
                 int score = tree_search (layer+1, b, O, P, moves+i, score_to_return);
                 if (score > score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
                     score_to_return = score;
                     best_i = i;
                 }
-                #ifdef PRUNING
                 // previous layer is min layer. Stop computation when curr layer score
                 // is greated than prev layer score
-                if (/*score_to_return > prev_layer_score && */score_to_return >= MAX_SCORE)
+                if (score_to_return >= MAX_SCORE-10)
                     break;
-                #endif
             }
         }
         else {                  
             // curr layer is min layer
             score_to_return = MAX_SCORE;
             for (i = 0; i < n_moves; ++i) {
+                if (scores[i] <= -(MAX_SCORE-10)) {
+                    score_to_return = scores[i];
+                    best_i = i;
+                    break;
+                }
+
                 int score = tree_search (layer+1, b, O, P, moves+i, score_to_return);
                 if (score < score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
                     score_to_return = score;
                     best_i = i;
                 }
-                #ifdef PRUNING
-                if (layer != 0 && /*score_to_return < prev_layer_score && */score_to_return <= -(MAX_SCORE-2))
+                if (layer != 0 && score_to_return <= -(MAX_SCORE-10))
                     break;
-                #endif
             }
         }
 
