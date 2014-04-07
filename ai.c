@@ -92,7 +92,7 @@ int get_best_move (BOARD b, PLAYER P, PLAYER O, COORD* move) {
             
             //printf ("Score (%2d,%2d) -> %d\n", r, c, score);
 
-            if (score > best_score || ((score==best_score) && (rand()%2 == 1))) {
+            if (score > best_score || ((score==best_score) /*&& (rand()%2 == 1)*/)) {
                 best_score = score;
                 best_row = r;
                 best_col = c;
@@ -130,7 +130,7 @@ int get_best_move_n (BOARD b, PLAYER P, PLAYER O, int best_score[MOVE_BREADTH], 
             int i, j;
             //printf ("\tScored move (%2d,%2d) -> %5d\n", r, c, score);
             for (i = 0; i < MOVE_BREADTH; i++) {
-                if (score > best_score[i] || ((score==best_score[i]) && (rand()%2 == 1)) || moves[i].row == -1) {
+                if (score > best_score[i] || ((score==best_score[i]) /*&& (rand()%2 == 1)*/) || moves[i].row == -1) {
                     // shift every move and score down
                     for (j = MOVE_BREADTH-2; j >= i; --j) {
                         best_score[j+1] = best_score[j];
@@ -189,7 +189,7 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
         }
         debug_printf ("  score %d.\n", score_to_return);
          #ifdef DEBUG
-            print_board (b);
+            ///////####print_board (b);
         #endif
     }
     // if not a leaf node
@@ -207,40 +207,39 @@ int tree_search (int layer, BOARD b, PLAYER P, PLAYER O, COORD* move, int prev_l
             // curr layer is a max layer
             score_to_return = -MAX_SCORE;
             for (i = 0; i < n_moves; ++i) {
-                if (scores[i] >= MAX_SCORE-10) {
+                /*if (scores[i] >= MAX_SCORE-10) {
                     score_to_return = scores[i];
                     best_i = i;
                     break;
-                }
-
+                }*/
                 int score = tree_search (layer+1, b, O, P, moves+i, score_to_return);
-                if (score > score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
+                if (score > score_to_return || ((score==score_to_return) /*&& (rand()%2 == 1)*/) || best_i == -1) {
                     score_to_return = score;
                     best_i = i;
                 }
                 // previous layer is min layer. Stop computation when curr layer score
                 // is greated than prev layer score
-                if (score_to_return >= MAX_SCORE-10)
-                    break;
+                /*if (score_to_return >= MAX_SCORE-10)
+                    break;*/
             }
         }
         else {                  
             // curr layer is min layer
             score_to_return = MAX_SCORE;
             for (i = 0; i < n_moves; ++i) {
-                if (scores[i] <= -(MAX_SCORE-10)) {
+                /*if (scores[i] <= -(MAX_SCORE-10)) {
                     score_to_return = scores[i];
                     best_i = i;
                     break;
-                }
+                }*/
 
                 int score = tree_search (layer+1, b, O, P, moves+i, score_to_return);
-                if (score < score_to_return || ((score==score_to_return) && (rand()%2 == 1)) || best_i == -1) {
+                if (score < score_to_return || ((score==score_to_return) /*&& (rand()%2 == 1)*/) || best_i == -1) {
                     score_to_return = score;
                     best_i = i;
                 }
-                if (layer != 0 && score_to_return <= -(MAX_SCORE-10))
-                    break;
+                /*if (layer != 0 && score_to_return <= -(MAX_SCORE-10))
+                    break;*/
             }
         }
 

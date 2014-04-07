@@ -1,6 +1,8 @@
 #ifndef __COMMON_H___
 #define __COMMON_H___
 
+#include <stdio.h>
+
 #define GRAPHICS
 
 #define BOARD_ROWS 11
@@ -14,7 +16,7 @@
 
 // currently MOVE_DEPTH must be odd for the AI to work properly
 #define MOVE_BREADTH 8
-#define MOVE_DEPTH 5
+#define MOVE_DEPTH 3
 #define NUM_NODES MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH*MOVE_BREADTH
 
 #define MAX_SCORE 100000000
@@ -32,7 +34,7 @@ typedef char ELEM;
 typedef ELEM BOARD[BOARD_ELEMS];
 #endif
 
-typedef enum {HUMAN,AI} PLAYER_TYPE;
+typedef enum {HUMAN,AI,FPGA} PLAYER_TYPE;
 typedef enum {P1,P2} PLAYER_NUMBER;
 
 typedef struct {
@@ -44,8 +46,8 @@ typedef struct {
 } COORD;
 
 typedef struct {
-	PLAYER_NUMBER num;
-	PLAYER_TYPE type;
+    PLAYER_NUMBER num;
+    PLAYER_TYPE type;
     ELEM stone;
 } PLAYER;
 

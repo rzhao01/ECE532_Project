@@ -10,6 +10,8 @@
 
 #include "common.h"
 
+int open_uart ();
+
 void initDisplay (SDL_Surface** screen, char title[]);
 int drawBoard(SDL_Surface* screen, BOARD b);
 

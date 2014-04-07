@@ -3,6 +3,61 @@
 
 #include "graphics.h"
 #include "board.h"
+#include <stdio.h>
+
+#include <unistd.h>     // UNIX standard function definitions
+#include <fcntl.h>      // File control definitions
+#include <errno.h>      // Error number definitions
+#include <termios.h>    // POSIX terminal control definitions
+
+// open uart tunnel for AI player
+int open_uart () {
+    int USB;
+    struct termios tty;
+    memset (&tty, 0, sizeof tty);
+    
+    USB = open( "/dev/ttyACM0", O_RDWR| O_NOCTTY );
+    if ( tcgetattr ( USB, &tty ) != 0 ) {
+      fprintf (stderr, "Error %d from tcgetattr: %s\n", errno, strerror(errno));
+      return 0;
+    }
+    /* Save old tty parameters */
+    //tty_old = tty;
+    
+    /* Set Baud Rate */
+    cfsetospeed (&tty, (speed_t)B9600);
+    cfsetispeed (&tty, (speed_t)B9600);
+
+    /* Setting other Port Stuff */
+    tty.c_cflag     &=  ~PARENB;        // Make 8n1
+    tty.c_cflag     &=  ~CSTOPB;
+    tty.c_cflag     &=  ~CSIZE;
+    tty.c_cflag     |=  CS8;
+    tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+
+    tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+    tty.c_oflag &= ~OPOST;
+
+    //tty.c_cflag     &=  ~CRTSCTS;       // no flow control
+    tty.c_cc[VMIN]      =   1;                  // read doesn't block
+    tty.c_cc[VTIME]     =   5;                  // 0.5 seconds read timeout
+    tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+
+    /* Make raw */
+    //cfmakeraw(&tty);
+
+    /* Flush Port, then applies attributes */
+    tcflush( USB, TCIFLUSH );
+
+    if ( tcsetattr ( USB, TCSANOW, &tty ) != 0)
+    {
+      fprintf (stderr, "Error %d from tcgetattr\n", errno);
+      return 0;
+    }
+
+    printf ("USB set to %d\n", USB);
+    return USB;
+}
 
 // initialize screen, set to NULL if graphics flag is not defined
 void initDisplay (SDL_Surface** screen, char title[]) {
