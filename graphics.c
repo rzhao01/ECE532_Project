@@ -16,7 +16,7 @@ int open_uart () {
     struct termios tty;
     memset (&tty, 0, sizeof tty);
     
-    USB = open( "/dev/ttyACM0", O_RDWR| O_NOCTTY );
+    USB = open( "/dev/ttyACM1", O_RDWR| O_NOCTTY );
     if ( tcgetattr ( USB, &tty ) != 0 ) {
       fprintf (stderr, "Error %d from tcgetattr: %s\n", errno, strerror(errno));
       return 0;
@@ -57,6 +57,38 @@ int open_uart () {
 
     printf ("USB set to %d\n", USB);
     return USB;
+}
+
+void uart_write (int USB, char* cmd) {
+  int n_written = 0;
+  do {
+      n_written += write( USB, &cmd[n_written], 1 );
+  }
+  while (cmd[n_written-1] != '\r' && n_written > 0);
+  printf ("uart_write (USB = %d): %s", USB, cmd);
+}
+
+int uart_read (int USB, char* buffer) {
+  int n=0, len = 0;
+  char c=0;
+  do {
+      n = read( USB, &c, 1 );
+      if (n > 0) {
+          buffer[len] = c;
+          len++;
+      }
+  }
+  while( c != '\r' && n > 0 && len < 49);
+  lseek ( USB, len, SEEK_CUR);
+  buffer[len] = '\0';
+
+  if (n < 0) {
+    fprintf (stderr, "Error reading from FPGA (USB=%d): %s\n", USB, strerror(errno));
+  }
+  else if (n == 0) {
+      fprintf (stderr, "Read null string from FPGA!\n");
+  }
+  return len;
 }
 
 // initialize screen, set to NULL if graphics flag is not defined
@@ -232,6 +264,16 @@ int waitEvent (SDL_Surface* screen) {
     }
   }
   return 0;
+}
+
+int checkIfExit (SDL_Surface* screen) {
+  SDL_Event event;
+   if(SDL_PollEvent(&event)) {
+    if ((event.type == SDL_KEYDOWN && (event.key.keysym.sym == SDLK_q || event.key.keysym.sym == SDLK_ESCAPE)) || 
+         event.type == SDL_QUIT)
+        return 1;
+  }
+  return 0;  
 }
 
 int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, COORD* move) {

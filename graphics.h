@@ -11,6 +11,8 @@
 #include "common.h"
 
 int open_uart ();
+void uart_write (int USB, char* cmd);
+int uart_read (int USB, char* buffer);
 
 void initDisplay (SDL_Surface** screen, char title[]);
 int drawBoard(SDL_Surface* screen, BOARD b);
@@ -23,6 +25,8 @@ int msgWin(SDL_Surface* screen, PLAYER player);
 int mainMenu (SDL_Surface* screen, PLAYER* Player1, PLAYER* Player2);
 
 int waitEvent (SDL_Surface* screen);
+
+int checkIfExit (SDL_Surface* screen);
 
 int get_move_player (SDL_Surface* screen, BOARD b, PLAYER P, COORD* move);
 

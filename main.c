@@ -45,19 +45,19 @@ int main()
         if (USB != 0) {
             char cmd[50];
             sprintf (cmd, "0%c%c\n", (Player1.type == FPGA) ? 'F' : 'U', (Player2.type == FPGA) ? 'F' : 'U');//+move.col, 'A'+move.row);
-            printf ("Wrote string to FPGA (USB = %d): %s", USB, cmd);
-            int n_written = 0;
+            uart_write (USB, cmd);
 
-            do {
-                n_written += write( USB, &cmd[n_written], 1 );
-            }
-            while (cmd[n_written-1] != '\r' && n_written > 0);
+            lseek (USB, 0, SEEK_END);
+
+            sprintf (cmd, "111\n");
+            uart_write (USB, cmd);
         }
-
-        //lseek ( USB, 0, SEEK_END);
 
         // inner loop for game turns
         for (;;) {
+            if (checkIfExit (screen))
+                break;
+
             PLAYER Curr_P, Opp_P;
             if (turn % 2 == 1) {
                 Curr_P = Player1;
@@ -85,46 +85,26 @@ int main()
                 assert (USB != 0);
                 printf ("Waiting for Player %d (External FPGA) to move\n", Curr_P.num+1);
 
-                int n = 0;
-                int len;
-                char c;
                 char buffer[50];
                 while (!status) {
-                    len = 0;
-                    do {
-                        n = read( USB, &c, 1 );
-                        if (n > 0) {
-                            buffer[len] = c;
-                            len++;
-                        }
-                    }
-                    while( c != '\r' && n > 0 && len < 49);
-                    lseek ( USB, len, SEEK_CUR);
-                    buffer[len] = '\0';
+                    int len = uart_read (USB, buffer);
+                    if (len == 0) break;
 
-                    if (n < 0) {
-                        fprintf (stderr, "Error reading from FPGA (USB=%d): %s\n", USB, strerror(errno));
+                    printf ("Read string from FPGA: %s", buffer);
+                    if (buffer[0] >= 'A' && buffer[0] <= 'A'+10 && buffer[2] >= 'A' && buffer[2] <= 'A'+10) {
+                        // correct format is "1X2", 1 and 2 are moves, X is dontcare
+                        move.row = buffer[2] - 'A';
+                        move.col = buffer[0] - 'A';
+                        status = 1;
+                        printf("Recognized move (%d,%d)\n", move.row, move.col);
                     }
-                    else if (n == 0) {
-                        fprintf (stderr, "Read null string from FPGA!\n");
+                    else if (buffer[1] == '0') {
+                        // fpga reset
+                        printf ("FPGA Reset\n");
+                        break;
                     }
                     else {
-                        printf ("Read string from FPGA: %s", buffer);
-                        if (buffer[0] >= 'A' && buffer[0] <= 'A'+10 && buffer[2] >= 'A' && buffer[2] <= 'A'+10) {
-                            // correct format is "1X2", 1 and 2 are moves, X is dontcare
-                            move.row = buffer[2] - 'A';
-                            move.col = buffer[0] - 'A';
-                            status = 1;
-                            printf("Recognized move (%d,%d)\n", move.row, move.col);
-                        }
-                        else if (buffer[1] == '0') {
-                            // fpga reset
-                            printf ("FPGA Reset\n");
-                            break;
-                        }
-                        else {
-                            printf ("Unrecognized move\n");
-                        }
+                        printf ("Unrecognized move\n");
                     }
                 };
             }
@@ -142,13 +122,7 @@ int main()
                 assert (USB != 0);
                 char cmd[50];
                 sprintf (cmd, "%c,%c\r\n", 'A'+move.col, 'A'+move.row);//+move.col, 'A'+move.row);
-                printf ("Wrote string to FPGA (USB = %d): %s", USB, cmd);
-                int n_written = 0;
-
-                do {
-                    n_written += write( USB, &cmd[n_written], 1 );
-                }
-                while (cmd[n_written-1] != '\r' && n_written > 0);
+                uart_write (USB, cmd);
             }
                 
             if (check_board_full(master_board)) {
@@ -167,5 +141,6 @@ int main()
     }
 
     SDL_Quit();
+    //if (USB != 0) close(USB);
     return 0;
 }
