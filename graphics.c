@@ -134,7 +134,7 @@ int drawBoard(SDL_Surface* screen, BOARD b)
 int clearStatusbar(SDL_Surface *screen)
 {
 #ifdef GRAPHICS
-  SDL_Rect statusbar = {.x = 0, .y = BOARD_COLS*SQUARE_SIZE+1, .w = BOARD_ROWS*SQUARE_SIZE, .h = STATUSBAR_SIZE};
+  SDL_Rect statusbar = {.x = 0, .y = BOARD_COLS*SQUARE_SIZE+1, .w = BOARD_ROWS*SQUARE_SIZE+100, .h = STATUSBAR_SIZE};
   SDL_FillRect(screen, &statusbar, BLACK);
   SDL_UpdateRect(screen, 0,0,0,0);
 #endif  
@@ -172,10 +172,11 @@ int msgWin(SDL_Surface *screen, PLAYER player)
   return 0;
 }
 
-// displays the menu, waits for user to indicate what game type, assigns Player1 and Player2 accordingly
-int mainMenu(SDL_Surface *screen, PLAYER* Player1, PLAYER* Player2)
-{
-  msgStatusbar(screen, "[F1] Human vs Human, [F2] Human vs AI, [F3] AI vs Human, [F4] AI vs AI", WHITE);
+// selects player type for P
+int selectPlayerType(SDL_Surface *screen, PLAYER* P) {
+  char buffer[200];
+  sprintf (buffer, "Select Player %d: [F1] Human, [F2] AI, [F3] External FPGA", P->num+1);
+  msgStatusbar(screen, buffer, WHITE);
   SDL_Event event;
 
   while(1) {
@@ -186,21 +187,15 @@ int mainMenu(SDL_Surface *screen, PLAYER* Player1, PLAYER* Player2)
       if(event.type == SDL_KEYDOWN) {
         switch(event.key.keysym.sym) {
           case SDLK_F1:
-            Player1->type = HUMAN;
-            Player2->type = HUMAN;
+            P->type = HUMAN;
             return 1;
+            break;
           case SDLK_F2:
-            Player1->type = HUMAN;
-            Player2->type = AI;
+            P->type = AI;
             return 1;
+            break;
           case SDLK_F3:
-            Player1->type = AI;
-            Player2->type = HUMAN;
-            
-            return 1;
-          case SDLK_F4:
-            Player1->type = AI;
-            Player2->type = AI;
+            P->type = FPGA;            
             return 1;
           case SDLK_q:
           case SDLK_ESCAPE:
@@ -210,9 +205,22 @@ int mainMenu(SDL_Surface *screen, PLAYER* Player1, PLAYER* Player2)
         }
       }
     }
-    //SDL_Delay(10);
+  }
+  return 0;
+}
+
+// displays the menu, waits for user to indicate what game type, assigns Player1 and Player2 accordingly
+int mainMenu(SDL_Surface *screen, PLAYER* Player1, PLAYER* Player2)
+{
+  int res = 1;
+  res = res && selectPlayerType (screen, Player1);
+  res = res && selectPlayerType (screen, Player2);
+  if (Player1->type == FPGA && Player2->type == FPGA) {
+    fprintf (stderr, "At most one player can be an FPGA\n");
+    return 0;
   }
   clearStatusbar(screen);
+  return res;
 }
 
 int waitEvent (SDL_Surface* screen) {

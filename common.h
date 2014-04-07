@@ -15,14 +15,14 @@
 #define STONE_P2 2
 
 // currently MOVE_DEPTH must be odd for the AI to work properly
-#define MOVE_BREADTH 8
+#define MOVE_BREADTH 12
 #define MOVE_DEPTH 3
 #define NUM_NODES MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH + MOVE_BREADTH*MOVE_BREADTH*MOVE_BREADTH
 
 #define MAX_SCORE 100000000
-#define C_P4 51//1024*8
-#define C_O3 40//1024*8
-#define C_P3 25//1024*3
+#define C_P4 7100//1024*8
+#define C_O3 5000//1024*8
+#define C_P3 200//1024*3
 #define C_O2 10
 #define C_P2 10
 
